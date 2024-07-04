@@ -54,3 +54,7 @@ dkms.conf
 # binaries
 bin
 psh
+
+#vscode
+src/build/
+.vscode/
