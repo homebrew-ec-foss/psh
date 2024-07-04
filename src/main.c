@@ -11,7 +11,7 @@ int PSH_EXIT(char **);
 
 char *builtin_str[] = {"exit"};
 
-int (*builtin_func[])(char **) = {&PSH_EXIT};
+int (*builtin_func[])(char **) = {&PSH_EXIT}; //function pointer that takes in array of strings and return an int)
 
 int size_builtin_str = sizeof(builtin_str) / sizeof(builtin_str[0]); // number of built_in args
 
