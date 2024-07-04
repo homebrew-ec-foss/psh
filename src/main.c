@@ -38,7 +38,7 @@ void PSH_READ() {
 
     char **tokens = PSH_TOKENIZER(inputline);
     if (tokens != NULL) {                       //frees tokens
-      // PSH_EXEC_EXTERNAL(tokens);
+      PSH_EXEC_EXTERNAL(tokens);
       free(tokens);
     }
   }
@@ -80,25 +80,26 @@ char **PSH_TOKENIZER(char *line) {
   // }
   return token_arr;
 }
-// int PSH_EXEC_EXTERNAL(char **token_arr) {
-//     pid_t pid, wpid;
-//     int status;
 
-//     pid = fork();
-//     if (pid == 0) {
-//         // Child process
-//         if (execvp(token_arr[0], token_arr) == -1) {
-//             perror("psh failed");
-//         }
-//         exit(EXIT_FAILURE);
-//     } else if (pid < 0) {
-//         // Error forking
-//         perror("psh error");
-//     } else {
-//         // Parent process
-//         do {
-//             wpid = waitpid(pid, &status, WUNTRACED);
-//         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
-//     }
-//     return 1;
-// }
+int PSH_EXEC_EXTERNAL(char **token_arr) {
+    pid_t pid, wpid;
+    int status;
+
+    pid = fork();
+    if (pid == 0) {
+        // Child process
+        if (execvp(token_arr[0], token_arr) == -1) {
+            perror("psh failed");
+        }
+        exit(EXIT_FAILURE);
+    } else if (pid < 0) {
+        // Error forking
+        perror("psh error");
+    } else {
+        // Parent process
+        do {
+            wpid = waitpid(pid, &status, WUNTRACED);
+        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+    }
+    return 1;
+}
