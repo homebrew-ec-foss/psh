@@ -128,6 +128,7 @@ int PSH_READ() {
   free(inputline);
   return run;
 }
+
 char **PSH_TOKENIZER(char *line) {
   size_t bufsize = 64, position = 0;
   char **token_arr = malloc(bufsize * sizeof(char *));
@@ -161,6 +162,7 @@ char **PSH_TOKENIZER(char *line) {
   // }
   return token_arr;
 }
+
 int PSH_EXEC_EXTERNAL(char **token_arr) {
   pid_t pid, wpid;
   int status;
