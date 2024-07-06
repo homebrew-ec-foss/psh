@@ -58,3 +58,4 @@ psh
 #vscode
 src/build/
 .vscode/
+test/
