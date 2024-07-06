@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
-#include <time.h>
 #include <unistd.h>
 
 int PSH_READ();
@@ -73,8 +72,41 @@ int PSH_ECHO(char **token_arr) { //
 }
 
 int PSH_PWD(char **token_arr) {
-  //your code goes here SUMITHRA
-  return 1;
+  
+  //printf("%s\n", token_arr[1]); //debugging
+  //printf("Printing current working directory\n"); //debugging
+
+  char cwd[1024];
+  char rpath[1024];
+  //printf("%d\n", PATH_MAX);
+  
+  if (token_arr[1] == NULL || strcmp(token_arr[1], "-L") == 0) // Default pwd and pwd -L
+  {
+    if (getcwd(cwd, sizeof(cwd)) != NULL)
+      {
+        printf("%s\n", cwd);
+      }
+    else
+    {
+      perror("PSH: getcwd() error");
+    }
+  }
+  else if ((strcmp(token_arr[1], "-P")) == 0)
+  {    
+    if (realpath(cwd, rpath) != NULL) // pwd -P
+    {
+      printf("%s\n", rpath);
+    }
+    else
+    {
+      perror("PSH: realpath() error");
+    }
+  }
+  else
+  {
+    fprintf(stderr, "Unknown option: %s\n", token_arr[1]);
+  }
+    return 1;
 }
 
 int PSH_HISTORY(char **token_arr) {
