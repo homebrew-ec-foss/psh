@@ -34,5 +34,4 @@ We have implemented the basic structure of a shell and execution of some built-i
 ### How to Build and Run:
 ```bash
 cd psh
-make
-./run
+make run
