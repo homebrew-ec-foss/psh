@@ -4,7 +4,7 @@ This project is a custom implementation of a shell written in C. It aims to achi
 
 ## Contributors:
 - Aditya R
-- Mukund Krishna Kumar
+- Krishna Kumar
 - Alayna Monteiro
 - Sumithra Suresh
 - Sidhartha Rao
