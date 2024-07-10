@@ -30,3 +30,5 @@ valgrind: all
 clean:
 	rm -rf $(BINDIR)/*
 
+debug:
+	gdb ./$(EXECUTABLE)
