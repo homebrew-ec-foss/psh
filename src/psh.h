@@ -2,9 +2,16 @@
 #ifndef PSH_H
 #define PSH_H
 
-#include <linux/limits.h>
+// our functions
+#include "builtin.h"
+
+#include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
+#include <sys/wait.h>
+#include <linux/limits.h>
 
 #define MAX_HISTORY 1024
 
@@ -17,7 +24,6 @@ extern int (*builtin_func[])(char **);
 extern int size_builtin_str;
 extern char PREV_DIR[1024];
 
-
 // Function Declarations
 
 // main.c functions
@@ -27,7 +33,7 @@ int PSH_READ();
 char **PSH_TOKENIZER(char *);
 int PSH_EXEC_EXTERNAL(char **);
 
-//helper functions
+// helper functions
 void remove_last_component(char *);
 int resolve_and_manage_symlink(char *, char *);
 char *commonSuffix(char *, char *);

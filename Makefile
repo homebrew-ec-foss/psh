@@ -3,6 +3,7 @@ CC = gcc
 CFLAGS = -g -Wall -Wextra -pedantic
 SRCDIR = src
 BINDIR = bin
+INCDIR = include
 EXECUTABLE = $(BINDIR)/psh
 
 SOURCES = $(wildcard $(SRCDIR)/*.c)
@@ -18,8 +19,11 @@ $(BINDIR):
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $(OBJECTS)
 
-$(OBJECTS): $(BINDIR)/%.o: $(SRCDIR)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+$(BINDIR)/%.o: $(SRCDIR)/%.c
+	$(CC) $(CFLAGS) -I$(INCDIR) -c -o $@ $<
+
+clean:
+	rm -rf $(BINDIR)/*
 
 run: all
 	./$(EXECUTABLE)
@@ -27,8 +31,5 @@ run: all
 valgrind: all
 	valgrind --leak-check=full ./$(EXECUTABLE) -s
 
-clean:
-	rm -rf $(BINDIR)/*
-
-debug:
+debug: all
 	gdb ./$(EXECUTABLE)
