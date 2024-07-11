@@ -327,6 +327,7 @@ char *expand_history(const char *arg, FILE *history_file) {
   }
 
   return expanded ? expanded : strdup(arg);
+}
 int compare_strings(const void *a, const void *b)
 {
   return strcmp(*(const char **)a, *(const char **)b);
