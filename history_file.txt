@@ -1,0 +1,17 @@
+ls
+neofetch
+pwd
+exit
+fc -l
+fc -l
+exit
+fc -l -n 2 5
+fc -n -l 2 5
+fc -ln 2 5
+exit
+exit
+fc -l
+fc -l -n 2 5
+fc -ln 2 5
+clear
+exit
