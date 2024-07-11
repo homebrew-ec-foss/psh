@@ -14,6 +14,9 @@
 #include <linux/limits.h>
 
 #define MAX_HISTORY 1024
+#define MAX_LINE_LENGTH 1024
+#define SESSION_HISTORY_FILE "session_history_file.txt"
+#define MEMORY_HISTORY_FILE "history_file.txt"
 #define MAX_VARS 100
 // #define MAX_FUNCS 100
 
@@ -28,7 +31,6 @@ struct Variable
 //     char func_name[64];
 //     char func_def[1024];
 // };
-
 
 // Global Variables
 extern char path_history[MAX_HISTORY][PATH_MAX];
@@ -59,6 +61,14 @@ void remove_last_component(char *);
 int resolve_and_manage_symlink(char *, char *);
 char *commonSuffix(char *, char *);
 char *helper_cd_func1(const char *, const char *);
+void delete_file(const char *);
+void read_lines(const char *, int, int);
+void read_lines_wo_no(const char *, int, int);
+int count_lines(const char *); 
+void read_lines_reverse(const char *, int, int);
+void remove_line(const char *, size_t);
+void clear_session_history();
+char *expand_history(const char *, FILE *);
 int compare_strings(const void *, const void *);
 void sort_strings(char **, int);
 

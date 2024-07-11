@@ -1,8 +1,7 @@
 // main.c
 #include "psh.h"
 
-int main(int argc, char **argv, char **envp)
-{
+int main(int argc, char **argv, char **envp) {
   printf("Welcome to psh!\n");
 
   // printf("%s@", getenv("USER"));
@@ -13,8 +12,7 @@ int main(int argc, char **argv, char **envp)
   return PSH_READ();
 }
 
-int PSH_READ()
-{
+int PSH_READ() {
   size_t n = 0;
   int run = 1;
   char *inputline =
@@ -22,8 +20,7 @@ int PSH_READ()
   while (run == 1) // if not done stack smashing occurs
   {
     printf("%s@PSH %s $ ", getenv("USER"), getcwd(cwd, sizeof(cwd)));
-    if (getline(&inputline, &n, stdin) == -1)
-    {
+    if (getline(&inputline, &n, stdin) == -1) {
       perror("getline");
       free(inputline);
       return -1;
@@ -31,6 +28,23 @@ int PSH_READ()
     inputline[strcspn(inputline, "\n")] = '\0';
     // getline takes \n as a part of string when pressed enter this.
     // line is used to remove that \n and changing it blank space
+
+    // Writing the commands to the global and session history file
+    FILE *fp1;
+    FILE *fp2;
+
+    fp1 = fopen(MEMORY_HISTORY_FILE, "a");
+    fp2 = fopen(SESSION_HISTORY_FILE, "a");
+
+    if (fp1 == NULL && fp2 == NULL) {
+      perror("Error:");
+      return 1;
+    } else {
+      fprintf(fp1, "%s\n", inputline);
+      fprintf(fp2, "%s\n", inputline);
+    }
+    fclose(fp1);
+    fclose(fp2);
 
     char **token_arr = PSH_TOKENIZER(inputline);
     if (token_arr[0] != NULL) // fixed \n giving seg fault
@@ -84,12 +98,9 @@ int PSH_READ()
         }
       }
       int isinbuilt = 0;
-      for (int i = 0; i < size_builtin_str; i++)
-      {
-        if (strcmp(token_arr[0], builtin_str[i]) == 0)
-        {
-          if (!strcmp(token_arr[0], "exit"))
-          {
+      for (int i = 0; i < size_builtin_str; i++) {
+        if (strcmp(token_arr[0], builtin_str[i]) == 0) {
+          if (!strcmp(token_arr[0], "exit")) {
             run = (*builtin_func[i])(token_arr);
             free(inputline);
             exit(run);
