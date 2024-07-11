@@ -111,3 +111,13 @@ char *helper_cd_func1(const char *str1, const char *str2)
 
   return result;
 }
+
+int compare_strings(const void *a, const void *b)
+{
+  return strcmp(*(const char **)a, *(const char **)b);
+}
+
+void sort_strings(char **strings, int num_strings)
+{
+  qsort(strings, num_strings, sizeof(char *), compare_strings);
+}
