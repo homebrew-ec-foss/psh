@@ -69,7 +69,7 @@ int PSH_CD(char **token_arr)
   }
   else if (strcmp(token_arr[1], "..") == 0)
   {
-    if(strcmp(localdir,"/")==0)//for every path other than / or root
+    if(strcmp(localdir,"/")==0)//For path inside / or root
     {
       strcpy(localdir,"/");
     } 
