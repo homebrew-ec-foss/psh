@@ -8,7 +8,8 @@ int main(int argc, char **argv, char **envp) {
   // for (int i=0; envp[i]!=NULL; i++) {  // accessing all env variables
   //       printf("%d: %s\n", i, envp[i]);
   //   }
-
+  getcwd(cwd, sizeof(cwd));
+  strcpy(PATH,cwd);
   return PSH_READ();
 }
 
@@ -19,8 +20,9 @@ int PSH_READ() {
       NULL;        // NULL is required to avoind conflicts with getline function
   while (run == 1) // if not done stack smashing occurs
   {
-    printf("%s@PSH %s $ ", getenv("USER"), getcwd(cwd, sizeof(cwd)));
-    if (getline(&inputline, &n, stdin) == -1) {
+    printf("%s@PSH %s $ ", getenv("USER"), PATH);
+    if (getline(&inputline, &n, stdin) == -1)
+    {
       perror("getline");
       free(inputline);
       return -1;

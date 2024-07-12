@@ -1,12 +1,15 @@
 #include "psh.h"
-char path_history[MAX_HISTORY][PATH_MAX];
-int history_index = 0;
-char cwd[1024];
+
+
+//variables
+
+char cwd[PATH_MAX];
 char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export"};
 int (*builtin_func[])(char **) = {&PSH_EXIT, &PSH_CD, &PSH_ECHO, &PSH_PWD, &PSH_FC, &PSH_EXPORT};
 int size_builtin_str = sizeof(builtin_str) / sizeof(builtin_str[0]);
 struct Variable global_vars[MAX_VARS];
 int num_vars = 0;
+char PATH[PATH_MAX];
 
 int PSH_EXIT(char **token_arr) {
   if (!token_arr[1]) {
@@ -25,20 +28,15 @@ int PSH_EXIT(char **token_arr) {
   // exit(exit_code);char
 }
 
-int PSH_CD(char **token_arr) {
-  char current_dir[PATH_MAX];
+int PSH_CD(char **token_arr)
+{
   char *localdir = malloc(PATH_MAX);
   char *home = NULL;                   // for ~ and empty cases
   static char PREV_DIR[PATH_MAX] = ""; // for - cases
-
-  if (localdir == NULL) {
+  strcpy(localdir, PATH);
+  if (localdir == NULL)
+  {
     perror("PSH: malloc() error");
-    return 1;
-  }
-
-  if (getcwd(current_dir, sizeof(current_dir)) == NULL) {
-    perror("PSH: getcwd() error");
-    free(localdir);
     return 1;
   }
 
@@ -59,46 +57,56 @@ int PSH_CD(char **token_arr) {
     }
     strncpy(localdir, PREV_DIR, PATH_MAX - 1);
     localdir[PATH_MAX - 1] = '\0';
-  } else if (strcmp(token_arr[1], "..") == 0) {
-    if (history_index > 0) {
-      history_index--;
-      strncpy(localdir, path_history[history_index], PATH_MAX - 1);
-      localdir[PATH_MAX - 1] = '\0';
-    } else {
-      snprintf(localdir, PATH_MAX, "%s/..", current_dir);
+  }
+  else if (strcmp(token_arr[1], "..") == 0)
+  {
+    if(strcmp(localdir,"/")==0)//For path inside / or root
+    {
+      strcpy(localdir,"/");
+    } 
+    else 
+    {
+      remove_last_component(localdir);
+      if(!strcmp(localdir ,""))
+      {
+        strcpy(localdir, "/");
+      }
     }
-  } else {
-    if (token_arr[1][0] != '/') {
-      snprintf(localdir, PATH_MAX, "%s/%s", current_dir, token_arr[1]);
-    } else {
+  }
+  else
+  {
+    if (token_arr[1][0] != '/')
+    {
+      if(strcmp(PATH,"/")==0)
+        snprintf(localdir, PATH_MAX, "/%s", token_arr[1]);
+      else
+        snprintf(localdir, PATH_MAX, "%s/%s", PATH, token_arr[1]);
+    }
+    else
+    {
       strncpy(localdir, token_arr[1], PATH_MAX - 1);
       localdir[PATH_MAX - 1] = '\0';
     }
   }
-
-  char resolved_path[PATH_MAX];
-  if (resolve_and_manage_symlink(localdir, resolved_path) == -1) {
-    free(localdir);
+  char *buffer=malloc(PATH_MAX);
+  realpath(localdir, buffer);
+  if (chdir(buffer) == -1)
+  {
+    // perror("PSH: chdir() error");
+    fprintf(stderr,"PSH:No such Directory \n");
     return 1;
-  }
-
-  // Save the logical path in the history
-  if (token_arr[1] != NULL && strcmp(token_arr[1], "..") != 0 &&
-      strcmp(token_arr[1], "-") != 0) {
-    strncpy(path_history[history_index], resolved_path, PATH_MAX - 1);
-    path_history[history_index][PATH_MAX - 1] = '\0';
-    history_index++;
-    // printf("%s\n",*path_history);
-  }
-
-  if (strcmp(localdir, resolved_path) != 0) {
-    printf("PSH: followed symlink: %s -> %s\n", localdir, resolved_path);
-  }
-
-  strncpy(PREV_DIR, current_dir, PATH_MAX - 1);
+  } 
+  int lastindex=strlen(localdir);
+  if(localdir[lastindex-1]=='/' && strlen(localdir)!=1)
+  {
+    localdir[lastindex-1]='\0';
+  }     
+  strncpy(PREV_DIR, PATH, PATH_MAX - 1);
   PREV_DIR[PATH_MAX - 1] = '\0';
+  strcpy(PATH,localdir);
 
   free(localdir);
+  free(buffer);
   return 1;
 }
 

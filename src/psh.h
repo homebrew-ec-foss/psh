@@ -2,16 +2,17 @@
 #ifndef PSH_H
 #define PSH_H
 
-// our functions 
+// Our Headers 
 #include "builtin.h"
 
+// C Headers
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/wait.h>
-#include <linux/limits.h>
+#include <limits.h>
 
 #define MAX_HISTORY 1024
 #define MAX_LINE_LENGTH 1024
@@ -33,13 +34,13 @@ struct Variable
 // };
 
 // Global Variables
-extern char path_history[MAX_HISTORY][PATH_MAX];
-extern int history_index;
-extern char cwd[1024];
+extern char cwd[PATH_MAX];
 extern char *builtin_str[];
 extern int (*builtin_func[])(char **);
 extern int size_builtin_str;
-extern char PREV_DIR[1024];
+extern char PREV_DIR[PATH_MAX];
+extern char PATH[PATH_MAX];
+
 
 extern struct Variable global_vars[MAX_VARS]; // Global array to store variables
 extern int num_vars; // Number of variables currently stored
@@ -58,9 +59,6 @@ int PSH_EXEC_EXTERNAL(char **);
 
 // helper functions
 void remove_last_component(char *);
-int resolve_and_manage_symlink(char *, char *);
-char *commonSuffix(char *, char *);
-char *helper_cd_func1(const char *, const char *);
 void delete_file(const char *);
 void read_lines(const char *, int, int);
 void read_lines_wo_no(const char *, int, int);
