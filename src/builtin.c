@@ -3,6 +3,7 @@
 #include <linux/limits.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 
 //variables
@@ -165,18 +166,84 @@ int PSH_CD(char **token_arr)
   return 1;
 }
 
-int PSH_ECHO(char **token_arr) { //
-  int i = 1;
-  while (token_arr[i] != NULL) {
-    printf("%s",token_arr[i]);
-    if (token_arr[i + 1] != NULL) {
-      printf(" ");
+void PSH_ECHO(int argc, char *argv[]) {
+    bool newline = true;
+    bool interpret_escapes = false;
+    bool skip_first = true;
+
+    int arg_index = 1; // Start after "echo"
+    for (; arg_index < argc; arg_index++) {
+        if (argv[arg_index][0] != '-') {
+            break;
+        }
+        for (int i = 1; argv[arg_index][i] != '\0'; i++) {
+            switch (argv[arg_index][i]) {
+                case 'n':
+                    newline = false;
+                    break;
+                case 'e':
+                    interpret_escapes = true;
+                    break;
+                case 'E':
+                    interpret_escapes = false;
+                    break;
+                default:
+                    skip_first = false;
+                    break;
+            }
+        }
+        if (skip_first) {
+            arg_index++;
+            break;
+        }
     }
-    i++;
-  }
-  printf("\n");
-  return 1;
+
+    for (int i = arg_index; i < argc; i++) {
+        char *arg = argv[i];
+
+        if (arg[0] == '"' && arg[strlen(arg) - 1] == '"') {
+            arg[strlen(arg) - 1] = '\0';  // Remove last quote
+            arg++;  // Skip first quote
+        }
+
+        if (interpret_escapes) {
+            char *write_pos = arg;
+            for (char *read_pos = arg; *read_pos != '\0'; read_pos++) {
+                if (*read_pos == '\\' && *(read_pos + 1) != '\0') {
+                    switch (*(++read_pos)) {
+                        case 'n':
+                            *write_pos++ = '\n';
+                            break;
+                        case 't':
+                            *write_pos++ = '\t';
+                            break;
+                        case '\\':
+                            *write_pos++ = '\\';
+                            break;
+                        default:
+                            *write_pos++ = '\\';
+                            *write_pos++ = *read_pos;
+                            break;
+                    }
+                } else {
+                    *write_pos++ = *read_pos;
+                }
+            }
+            *write_pos = '\0';
+        }
+
+        if (i > arg_index) {
+            putchar(' ');
+        }
+        fputs(arg, stdout);
+    }
+
+    if (newline) {
+        putchar('\n');
+    }
 }
+
+
 
 int PSH_PWD(char **token_arr) {
 
