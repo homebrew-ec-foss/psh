@@ -1,3 +1,10 @@
+# create .files directory before executing
+DIR := .files
+create_dir : 
+	mkdir -p $(DIR)
+all: create_dir
+	@echo "$(DIR) created or already exists"
+
 CC = gcc
 #CFLAGS = -g -Wall -Wextra -pedantic -Werror
 CFLAGS = -g -Wall -Wextra -pedantic
