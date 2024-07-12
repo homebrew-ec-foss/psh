@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/wait.h>
-#include <linux/limits.h>
+#include <limits.h>
 
 #define MAX_HISTORY 1024
 #define MAX_LINE_LENGTH 1024
