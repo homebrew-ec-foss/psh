@@ -166,12 +166,15 @@ int PSH_CD(char **token_arr)
 }
 
 int PSH_ECHO(char **token_arr) { //
-  // Sid
-  //   int i = 1;
-  //   printf("%s",token_arr[0]); // debugging
-  //   // while (token_arr[i] != "\n") {
-  //   // printf("%s",token_arr[i]);
-  //   // }
+  int i = 1;
+  while (token_arr[i] != NULL) {
+    printf("%s",token_arr[i]);
+    if (token_arr[i + 1] != NULL) {
+      printf(" ");
+    }
+    i++;
+  }
+  printf("\n");
   return 1;
 }
 
