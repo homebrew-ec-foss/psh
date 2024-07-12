@@ -1,5 +1,8 @@
+MEMORY_HISTORY_FILE
+
 # Prerequisites
 *.d
+
 
 # Object files
 *.o

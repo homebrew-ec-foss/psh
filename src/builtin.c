@@ -1,4 +1,5 @@
 #include "psh.h"
+// #include <cstdio>
 #include <linux/limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -142,6 +143,9 @@ int PSH_CD(char **token_arr)
   {
     // perror("PSH: chdir() error");
     fprintf(stderr,"PSH:No such Directory \n");
+    free(localdir);
+    free(rpath);
+    free(pathtoken);
     return 1;
   } 
   int lastindex=strlen(localdir);
@@ -157,6 +161,7 @@ int PSH_CD(char **token_arr)
     strcpy(PATH,localdir);
   free(localdir);
   free(rpath);
+  free(pathtoken);
   return 1;
 }
 
@@ -197,6 +202,7 @@ int PSH_PWD(char **token_arr) {
   } else {
     fprintf(stderr, "Unknown option: %s\n", token_arr[1]);
   }
+  free(buffer);
   return 1;
 }
 

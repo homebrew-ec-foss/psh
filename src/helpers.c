@@ -9,6 +9,15 @@ void remove_last_component(char *path) {
   }
 }
 
+void get_last_path_component(const char *full_path, char *last_component) {
+  char *last_slash = strrchr(full_path, '/');
+  if (last_slash != NULL) {
+    strcpy(last_component, last_slash + 1); // +1 to skip the '/'
+  } else {
+    strcpy(last_component, full_path); // Fallback in case there's no '/'
+  }
+}
+
 // Function to read lines
 void read_lines(const char *filename, int low_lim, int up_lim) {
   FILE *file = fopen(filename, "r");

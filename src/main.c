@@ -12,6 +12,7 @@ int main(int argc, char **argv, char **envp) {
   // for (int i=0; envp[i]!=NULL; i++) {  // accessing all env variables
   //       printf("%d: %s\n", i, envp[i]);
   //   }
+
   getcwd(cwd, sizeof(cwd)); // home/$USER/psh
   strcpy(PATH,cwd);
   return PSH_READ();
@@ -21,9 +22,19 @@ int PSH_READ() {
   size_t n = 0;
   int run = 1;
   char *inputline = NULL;        // NULL is required to avoind conflicts with getline function
+
+
   while (run == 1) // if not done stack smashing occurs
   {
-    printf("%s@PSH %s $ ", getenv("USER"), PATH);
+    char last_component[PATH_MAX];
+    get_last_path_component(PATH, last_component);
+
+    if(strcmp(PATH, "/") == 0) 
+      printf("%s@PSH → %s $ ", getenv("USER"), "/");
+    
+    else
+      printf("%s@PSH → %s $ ", getenv("USER"), last_component);
+
     if (getline(&inputline, &n, stdin) == -1)
     {
       perror("getline");

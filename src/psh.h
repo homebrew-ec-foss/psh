@@ -59,6 +59,7 @@ int PSH_EXEC_EXTERNAL(char **);
 
 // helper functions
 void remove_last_component(char *);
+void get_last_path_component(const char *, char *);
 void delete_file(const char *);
 void read_lines(const char *, int, int);
 void read_lines_wo_no(const char *, int, int);
