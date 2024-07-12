@@ -64,4 +64,4 @@ src/build/
 test/
 main
 psh
-.files/MEMORY_HISTORY_FILE
+.files/*
