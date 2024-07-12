@@ -106,7 +106,21 @@ int PSH_CD(char **token_arr)
       }
     }
   }
-  
+  else if (strcmp(pathtoken, "./") == 0)
+  {
+    if(strcmp(localdir,"/")==0)//For path inside / or root
+    {
+      strcpy(localdir,"/");
+    } 
+    else 
+    {
+      if(!strcmp(localdir ,""))
+      {
+        strcpy(localdir, "/");
+      }
+    }
+  }
+
   else
   {
     if (pathtoken[0] != '/')
