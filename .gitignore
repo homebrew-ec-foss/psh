@@ -61,5 +61,4 @@ src/build/
 test/
 main
 psh
-history_file.txt
-session_history_file.txt
+.files/MEMORY_HISTORY_FILE
