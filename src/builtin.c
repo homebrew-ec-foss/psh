@@ -1,4 +1,7 @@
 #include "psh.h"
+#include <linux/limits.h>
+#include <stdio.h>
+#include <string.h>
 
 
 //variables
@@ -12,18 +15,27 @@ int num_vars = 0;
 char PATH[PATH_MAX];
 
 int PSH_EXIT(char **token_arr) {
+
+  char PATH_DEL[PATH_MAX];
+  strcpy(PATH_DEL, cwd);
+  strcat(PATH_DEL,"/.files/SESSION_HISTORY_FILE");
+
+  // printf("%s",PATH_DEL); // debug printf
+
   if (!token_arr[1]) {
     printf("bye bye PSH :D\n"); // handling empty args and freeing token array
                                 // before leaving
     free(token_arr);
-    delete_file(SESSION_HISTORY_FILE);
+    delete_file(PATH_DEL);
+    // printf("%s\n",cwd);
     return 0;
     // exit(0);
   }
+  // printf("%s\n",cwd);
   printf("bye bye PSH :D\n");
   int exit_code = atoi(token_arr[1]);
   free(token_arr);
-  delete_file(SESSION_HISTORY_FILE);
+  delete_file(PATH_DEL);
   return exit_code;
   // exit(exit_code);char
 }

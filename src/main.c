@@ -1,14 +1,18 @@
 // main.c
 #include "psh.h"
+#include <linux/limits.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
 
 int main(int argc, char **argv, char **envp) {
   printf("Welcome to psh!\n");
-
   // printf("%s@", getenv("USER"));
   // for (int i=0; envp[i]!=NULL; i++) {  // accessing all env variables
   //       printf("%d: %s\n", i, envp[i]);
   //   }
-  getcwd(cwd, sizeof(cwd));
+  getcwd(cwd, sizeof(cwd)); // home/$USER/psh
   strcpy(PATH,cwd);
   return PSH_READ();
 }
@@ -16,8 +20,7 @@ int main(int argc, char **argv, char **envp) {
 int PSH_READ() {
   size_t n = 0;
   int run = 1;
-  char *inputline =
-      NULL;        // NULL is required to avoind conflicts with getline function
+  char *inputline = NULL;        // NULL is required to avoind conflicts with getline function
   while (run == 1) // if not done stack smashing occurs
   {
     printf("%s@PSH %s $ ", getenv("USER"), PATH);
@@ -35,8 +38,17 @@ int PSH_READ() {
     FILE *fp1;
     FILE *fp2;
 
-    fp1 = fopen(MEMORY_HISTORY_FILE, "a");
-    fp2 = fopen(SESSION_HISTORY_FILE, "a");
+
+    char path_memory[PATH_MAX];
+    strcpy(path_memory, cwd);
+    strcat(path_memory, "/.files/MEMORY_HISTORY_FILE");
+    fp1 = fopen(path_memory, "a");
+
+    char path_session[PATH_MAX];
+    strcpy(path_session, cwd);
+    strcat(path_session, "/.files/SESSION_HISTORY_FILE");
+    fp2 = fopen(path_session, "a");
+
 
     if (fp1 == NULL && fp2 == NULL) {
       perror("Error:");
