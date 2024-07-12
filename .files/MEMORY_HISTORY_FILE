@@ -1,57 +1,8 @@
-ls
-ls -l
-ls -a
-cd .files
-ls
 cd ..
-cls
-clear
-ls
-ls
-cd bin
-ls
-cd bin
-cls
-cls
-clear
-ls
-cd bin
-cat 
-clear
-ls
-cd bin
-ls
-ls
+cd
+exit
 cd ..
-ls
-ls
-pwd
-exit
-ls
-cd bin
-ls
-ls
-clear
-exit
-exit
-clear
-ls
-exit
-clear
-clear
-ls
-cd bin
-cd ..
-ls
-exit
-exit
-clear
-ls
-cd bin
-ls
-cd ..
-ls
-exit
-clear
-ls
+cd ./
+cd 
+cd ./
 exit

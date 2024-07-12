@@ -45,14 +45,34 @@ int PSH_CD(char **token_arr)
   char *localdir = malloc(PATH_MAX);
   char *home = NULL;                   // for ~ and empty cases
   static char PREV_DIR[PATH_MAX] = ""; // for - cases
+  char * pathtoken=malloc(PATH_MAX);
+
   strcpy(localdir, PATH);
   if (localdir == NULL)
   {
     perror("PSH: malloc() error");
     return 1;
   }
+  if(token_arr[1]!=NULL)
+  {
+    if((strcmp(token_arr[1], "-L") == 0 || strcmp(token_arr[1], "-P") == 0))  
+    {
+      if(token_arr[2]!=NULL)
+        strcpy(pathtoken,token_arr[2]);    
+      else
+        pathtoken=NULL;
+    }
+    else 
+    {
+      if(token_arr[1]!=NULL)
+      strcpy(pathtoken,token_arr[1]);
+    }
+  }
+  else {
+    pathtoken=NULL;
+  }
 
-  if (token_arr[1] == NULL || strcmp(token_arr[1], "~") == 0) {
+  if (pathtoken == NULL || strcmp(pathtoken, "~") == 0) {
     home = getenv("HOME");
     if (home == NULL) {
       fprintf(stderr, "PSH: HOME environment variable not set\n");
@@ -61,7 +81,8 @@ int PSH_CD(char **token_arr)
     }
     strncpy(localdir, home, PATH_MAX - 1);
     localdir[PATH_MAX - 1] = '\0';
-  } else if (strcmp(token_arr[1], "-") == 0) {
+  } 
+  else if (strcmp(pathtoken, "-") == 0) {
     if (PREV_DIR[0] == '\0') {
       fprintf(stderr, "PSH: No previous directory\n");
       free(localdir);
@@ -70,7 +91,7 @@ int PSH_CD(char **token_arr)
     strncpy(localdir, PREV_DIR, PATH_MAX - 1);
     localdir[PATH_MAX - 1] = '\0';
   }
-  else if (strcmp(token_arr[1], "..") == 0)
+  else if (strcmp(pathtoken, "..") == 0)
   {
     if(strcmp(localdir,"/")==0)//For path inside / or root
     {
@@ -85,24 +106,25 @@ int PSH_CD(char **token_arr)
       }
     }
   }
+  
   else
   {
-    if (token_arr[1][0] != '/')
+    if (pathtoken[0] != '/')
     {
       if(strcmp(PATH,"/")==0)
-        snprintf(localdir, PATH_MAX, "/%s", token_arr[1]);
+        snprintf(localdir, PATH_MAX, "/%s", pathtoken);
       else
-        snprintf(localdir, PATH_MAX, "%s/%s", PATH, token_arr[1]);
+        snprintf(localdir, PATH_MAX, "%s/%s", PATH, pathtoken);
     }
     else
     {
-      strncpy(localdir, token_arr[1], PATH_MAX - 1);
+      strncpy(localdir, pathtoken, PATH_MAX - 1);
       localdir[PATH_MAX - 1] = '\0';
     }
   }
-  char *buffer=malloc(PATH_MAX);
-  realpath(localdir, buffer);
-  if (chdir(buffer) == -1)
+  char *rpath=malloc(PATH_MAX);
+  realpath(localdir, rpath);
+  if (chdir(rpath) == -1)
   {
     // perror("PSH: chdir() error");
     fprintf(stderr,"PSH:No such Directory \n");
@@ -115,10 +137,12 @@ int PSH_CD(char **token_arr)
   }     
   strncpy(PREV_DIR, PATH, PATH_MAX - 1);
   PREV_DIR[PATH_MAX - 1] = '\0';
-  strcpy(PATH,localdir);
-
+  if(token_arr[1]!=NULL && strcmp(token_arr[1],"-P")==0)    
+    strcpy(PATH,rpath);
+  else
+    strcpy(PATH,localdir);
   free(localdir);
-  free(buffer);
+  free(rpath);
   return 1;
 }
 
@@ -136,20 +160,21 @@ int PSH_PWD(char **token_arr) {
 
   // printf("%s\n", token_arr[1]); //debugging
   // printf("Printing current working directory\n"); //debugging
-
+  char *buffer=malloc(PATH_MAX);
   char rpath[1024];
   // printf("%d\n", PATH_MAX);
 
   if (token_arr[1] == NULL ||
       strcmp(token_arr[1], "-L") == 0) // Default pwd and pwd -L
   {
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
-      printf("%s\n", cwd);
+    if (PATH) 
+    {
+      printf("%s\n", PATH);
     } else {
-      perror("PSH: getcwd() error");
+      perror("PSH: PATH error");
     }
   } else if ((strcmp(token_arr[1], "-P")) == 0) {
-    if (realpath(cwd, rpath) != NULL) // pwd -P
+    if (realpath(PATH, rpath) != NULL) // pwd -P
     {
       printf("%s\n", rpath);
     } else {

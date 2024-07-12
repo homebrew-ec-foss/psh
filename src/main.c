@@ -27,13 +27,14 @@ int PSH_READ() {
     if (getline(&inputline, &n, stdin) == -1)
     {
       perror("getline");
+
       free(inputline);
       return -1;
     }
     inputline[strcspn(inputline, "\n")] = '\0';
     // getline takes \n as a part of string when pressed enter this.
     // line is used to remove that \n and changing it blank space
-
+    
     // Writing the commands to the global and session history file
     FILE *fp1;
     FILE *fp2;
