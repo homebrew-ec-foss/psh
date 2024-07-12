@@ -3,6 +3,7 @@
 #include <linux/limits.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 
 //variables
@@ -165,18 +166,102 @@ int PSH_CD(char **token_arr)
   return 1;
 }
 
-int PSH_ECHO(char **token_arr) { //
-  int i = 1;
-  while (token_arr[i] != NULL) {
-    printf("%s",token_arr[i]);
-    if (token_arr[i + 1] != NULL) {
-      printf(" ");
+
+int PSH_ECHO(char **token_arr) {
+    bool newline = true;
+    bool interpret_escapes = false;
+    FILE *output = stdout;
+    int arg_index = 1;
+
+    for (; token_arr[arg_index] != NULL; arg_index++) {
+        if (token_arr[arg_index][0] != '-') {
+            break;
+        }
+        for (int i = 1; token_arr[arg_index][i] != '\0'; i++) {
+            switch (token_arr[arg_index][i]) {
+                case 'n':
+                    newline = false;
+                    break;
+                case 'e':
+                    interpret_escapes = true;
+                    break;
+                case 'E':
+                    interpret_escapes = false;
+                    break;
+                default:
+                    break;
+            }
+        }
     }
-    i++;
-  }
-  printf("\n");
-  return 1;
+
+    char **output_tokens = token_arr;
+    int output_token_count = 0;
+    while (output_tokens[output_token_count] != NULL) {
+        if (strcmp(output_tokens[output_token_count], ">") == 0) {
+            if (output_tokens[output_token_count + 1] != NULL) {
+                output = fopen(output_tokens[output_token_count + 1], "w");
+                if (output == NULL) {
+                    perror("Error opening file");
+                    return 1;
+                }
+                output_tokens[output_token_count] = NULL;
+            }
+            break;
+        }
+        output_token_count++;
+    }
+
+    for (int i = arg_index; token_arr[i] != NULL; i++) {
+        char *arg = token_arr[i];
+
+        if (arg[0] == '"' && arg[strlen(arg) - 1] == '"') {
+            arg[strlen(arg) - 1] = '\0';
+            arg++;
+        }
+
+        if (interpret_escapes) {
+            char *write_pos = arg;
+            for (char *read_pos = arg; *read_pos != '\0'; read_pos++) {
+                if (*read_pos == '\\' && *(read_pos + 1) != '\0') {
+                    switch (*(++read_pos)) {
+                        case 'n':
+                            *write_pos++ = '\n';
+                            break;
+                        case 't':
+                            *write_pos++ = '\t';
+                            break;
+                        case '\\':
+                            *write_pos++ = '\\';
+                            break;
+                        default:
+                            *write_pos++ = '\\';
+                            *write_pos++ = *read_pos;
+                            break;
+                    }
+                } else {
+                    *write_pos++ = *read_pos;
+                }
+            }
+            *write_pos = '\0';
+        }
+
+        if (i > arg_index) {
+            fputc(' ', output);
+        }
+        fputs(arg, output);
+    }
+
+    if (newline) {
+        fputc('\n', output);
+    }
+
+    if (output != stdout) {
+        fclose(output);
+    }
+
+    return 1;
 }
+
 
 int PSH_PWD(char **token_arr) {
 
