@@ -65,6 +65,7 @@ int count_lines(const char *);
 void read_lines_reverse(const char *, int, int);
 void remove_line(const char *, size_t);
 void clear_session_history();
+void read_lines_reverse_wo_no(const char *, int, int); 
 char *expand_history(const char *, FILE *);
 int compare_strings(const void *, const void *);
 void sort_strings(char **, int);
