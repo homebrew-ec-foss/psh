@@ -214,11 +214,10 @@ int PSH_ECHO(char **token_arr) {
         char *arg = token_arr[i];
         char *write_pos = arg;
 
-        // Remove all quotes from the argument
         char *src = arg;
         char *dst = arg;
         while (*src) {
-            if (*src != '\'' && *src != '"') {
+            if (*src != '\'') {
                 *dst++ = *src;
             }
             src++;
@@ -254,15 +253,15 @@ int PSH_ECHO(char **token_arr) {
             strcpy(arg, expanded_arg);
         }
 
-        // Variable expansion
-        if (arg[0] == '$') {
-            char *var_name = arg + 1; // Skip the '$' sign
-            char *var_value = getenv(var_name);
+        if (arg[0] == '"' && arg[strlen(arg) - 1] == '"') {
+            char expanded_arg[1024];
+            strncpy(expanded_arg, arg + 1, strlen(arg) - 2);
+            expanded_arg[strlen(arg) - 2] = '\0';
+            char *var_value = getenv(expanded_arg);
             if (var_value != NULL) {
                 strcpy(arg, var_value);
             } else {
-                // Variable not found, handle accordingly (e.g., print nothing)
-                arg[0] = '\0'; // Empty string
+                arg[0] = '\0';
             }
         }
 
