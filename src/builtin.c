@@ -316,6 +316,21 @@ int PSH_PWD(char **token_arr) {
 int PSH_FC(char **token_arr) {
   int n = -1;
 
+  char MEMORY_HISTORY_FILE[PATH_MAX];
+  char SESSION_HISTORY_FILE[PATH_MAX];
+
+  char path_memory[PATH_MAX];
+  strcpy(path_memory, cwd);
+  strcat(path_memory, "/.files/MEMORY_HISTORY_FILE");
+  strcpy(MEMORY_HISTORY_FILE, path_memory);
+
+
+  char path_session[PATH_MAX];
+  strcpy(path_session, cwd);
+  strcat(path_session, "/.files/SESSION_HISTORY_FILE");
+  strcpy(SESSION_HISTORY_FILE, path_session);
+
+
   if (token_arr[1] == NULL) {
     n = 0;
   } else if ((strcmp(token_arr[1], "-l") == 0) &&

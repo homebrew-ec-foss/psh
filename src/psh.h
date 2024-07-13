@@ -16,8 +16,6 @@
 
 #define MAX_HISTORY 1024
 #define MAX_LINE_LENGTH 1024
-#define SESSION_HISTORY_FILE "session_history_file.txt"
-#define MEMORY_HISTORY_FILE "history_file.txt"
 #define MAX_VARS 100
 // #define MAX_FUNCS 100
 
