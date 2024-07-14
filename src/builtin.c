@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 // variables
 
@@ -143,119 +144,120 @@ int PSH_CD(char **token_arr) {
 }
 
 int PSH_ECHO(char **token_arr) {
-  bool newline = true;
-  bool interpret_escapes = false;
-  FILE *output = stdout;
-  int arg_index = 1;
+    bool newline = true;
+    bool interpret_escapes = false;
+    FILE *output = stdout;
+    int arg_index = 1;
 
-  for (; token_arr[arg_index] != NULL; arg_index++) {
-    if (token_arr[arg_index][0] != '-') {
-      break;
-    }
-    for (int i = 1; token_arr[arg_index][i] != '\0'; i++) {
-      switch (token_arr[arg_index][i]) {
-      case 'n':
-        newline = false;
-        break;
-      case 'e':
-        interpret_escapes = true;
-        break;
-      case 'E':
-        interpret_escapes = false;
-        break;
-      default:
-        break;
-      }
-    }
-  }
-
-  char **output_tokens = token_arr;
-  int output_token_count = 0;
-  while (output_tokens[output_token_count] != NULL) {
-    if (strcmp(output_tokens[output_token_count], ">") == 0) {
-      if (output_tokens[output_token_count + 1] != NULL) {
-        output = fopen(output_tokens[output_token_count + 1], "w");
-        if (output == NULL) {
-          perror("Error opening file");
-          return 1;
+    for (; token_arr[arg_index] != NULL; arg_index++) {
+        if (token_arr[arg_index][0] != '-') {
+            break;
         }
-        output_tokens[output_token_count] = NULL;
-      }
-      break;
-    }
-    output_token_count++;
-  }
-
-  for (int i = arg_index; token_arr[i] != NULL; i++) {
-    char *arg = token_arr[i];
-    char *write_pos = arg;
-
-    char *src = arg;
-    char *dst = arg;
-    while (*src) {
-      if (*src != '\'') {
-        *dst++ = *src;
-      }
-      src++;
-    }
-    *dst = '\0';
-
-    if (interpret_escapes) {
-      char expanded_arg[1024];
-      char *exp_write_pos = expanded_arg;
-
-      for (char *read_pos = arg; *read_pos != '\0'; read_pos++) {
-        if (*read_pos == '\\' && *(read_pos + 1) != '\0') {
-          switch (*(++read_pos)) {
-          case 'n':
-            *exp_write_pos++ = '\n';
-            break;
-          case 't':
-            *exp_write_pos++ = '\t';
-            break;
-          case '\\':
-            *exp_write_pos++ = '\\';
-            break;
-          default:
-            *exp_write_pos++ = '\\';
-            *exp_write_pos++ = *read_pos;
-            break;
-          }
-        } else {
-          *exp_write_pos++ = *read_pos;
+        for (int i = 1; token_arr[arg_index][i] != '\0'; i++) {
+            switch (token_arr[arg_index][i]) {
+                case 'n':
+                    newline = false;
+                    break;
+                case 'e':
+                    interpret_escapes = true;
+                    break;
+                case 'E':
+                    interpret_escapes = false;
+                    break;
+                default:
+                    break;
+            }
         }
-      }
-      *exp_write_pos = '\0';
-      strcpy(arg, expanded_arg);
     }
 
-    if (arg[0] == '"' && arg[strlen(arg) - 1] == '"') {
-      char expanded_arg[1024];
-      strncpy(expanded_arg, arg + 1, strlen(arg) - 2);
-      expanded_arg[strlen(arg) - 2] = '\0';
-      char *var_value = getenv(expanded_arg);
-      if (var_value != NULL) {
-        strcpy(arg, var_value);
-      } else {
-        arg[0] = '\0';
-      }
+    char **output_tokens = token_arr;
+    int output_token_count = 0;
+    while (output_tokens[output_token_count] != NULL) {
+        if (strcmp(output_tokens[output_token_count], ">") == 0) {
+            if (output_tokens[output_token_count + 1] != NULL) {
+                output = fopen(output_tokens[output_token_count + 1], "w");
+                if (output == NULL) {
+                    perror("Error opening file");
+                    return 1;
+                }
+                output_tokens[output_token_count] = NULL;
+            }
+            break;
+        }
+        output_token_count++;
     }
 
-    if (i > arg_index) {
-      fputc(' ', output);
+    for (int i = arg_index; token_arr[i] != NULL; i++) {
+        char *arg = token_arr[i];
+        char *write_pos = arg;
+
+        // Remove all quotes from the argument
+        char *src = arg;
+        char *dst = arg;
+        while (*src) {
+            if (*src != '\'' && *src != '"') {
+                *dst++ = *src;
+            }
+            src++;
+        }
+        *dst = '\0';
+
+        if (interpret_escapes) {
+            char expanded_arg[1024];
+            char *exp_write_pos = expanded_arg;
+
+            for (char *read_pos = arg; *read_pos != '\0'; read_pos++) {
+                if (*read_pos == '\\' && *(read_pos + 1) != '\0') {
+                    switch (*(++read_pos)) {
+                        case 'n':
+                            *exp_write_pos++ = '\n';
+                            break;
+                        case 't':
+                            *exp_write_pos++ = '\t';
+                            break;
+                        case '\\':
+                            *exp_write_pos++ = '\\';
+                            break;
+                        default:
+                            *exp_write_pos++ = '\\';
+                            *exp_write_pos++ = *read_pos;
+                            break;
+                    }
+                } else {
+                    *exp_write_pos++ = *read_pos;
+                }
+            }
+            *exp_write_pos = '\0';
+            strcpy(arg, expanded_arg);
+        }
+
+        // Variable expansion
+        if (arg[0] == '$') {
+            char *var_name = arg + 1; // Skip the '$' sign
+            char *var_value = getenv(var_name);
+            if (var_value != NULL) {
+                strcpy(arg, var_value);
+            } else {
+                // Variable not found, handle accordingly (e.g., print nothing)
+                arg[0] = '\0'; // Empty string
+            }
+        }
+
+        if (i > arg_index) {
+            fputc(' ', output);
+        }
+        fputs(arg, output);
     }
-    fputs(arg, output);
-  }
 
-  if (newline) {
-    fputc('\n', output);
-  }
+    if (newline) {
+        fputc('\n', output);
+    }
 
-  if (output != stdout) {
-    fclose(output);
-  }
+    if (output != stdout) {
+        fclose(output);
+    }
 
-  return 1;
+    return 1;
 }
 
 int PSH_PWD(char **token_arr) {
