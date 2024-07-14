@@ -16,8 +16,6 @@
 
 #define MAX_HISTORY 1024
 #define MAX_LINE_LENGTH 1024
-#define SESSION_HISTORY_FILE "session_history_file.txt"
-#define MEMORY_HISTORY_FILE "history_file.txt"
 #define MAX_VARS 100
 // #define MAX_FUNCS 100
 
@@ -67,6 +65,7 @@ int count_lines(const char *);
 void read_lines_reverse(const char *, int, int);
 void remove_line(const char *, size_t);
 void clear_session_history();
+void read_lines_reverse_wo_no(const char *, int, int); 
 char *expand_history(const char *, FILE *);
 int compare_strings(const void *, const void *);
 void sort_strings(char **, int);

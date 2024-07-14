@@ -7,7 +7,7 @@ This project is a custom implementation of a shell written in C. It aims to achi
 - Krishna Kumar
 - Alayna Monteiro
 - Sumithra Suresh
-- Sidhartha Rao
+- Siddhartha Rao
 
 ## Mentors:
 - Nathan Paul

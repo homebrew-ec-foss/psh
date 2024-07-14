@@ -1,16 +1,17 @@
 #include "psh.h"
 // #include <cstdio>
 #include <linux/limits.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 
-
-//variables
+// variables
 
 char cwd[PATH_MAX];
 char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export"};
-int (*builtin_func[])(char **) = {&PSH_EXIT, &PSH_CD, &PSH_ECHO, &PSH_PWD, &PSH_FC, &PSH_EXPORT};
+int (*builtin_func[])(char **) = {&PSH_EXIT, &PSH_CD, &PSH_ECHO,
+                                  &PSH_PWD,  &PSH_FC, &PSH_EXPORT};
 int size_builtin_str = sizeof(builtin_str) / sizeof(builtin_str[0]);
 struct Variable global_vars[MAX_VARS];
 int num_vars = 0;
@@ -20,7 +21,7 @@ int PSH_EXIT(char **token_arr) {
 
   char PATH_DEL[PATH_MAX];
   strcpy(PATH_DEL, cwd);
-  strcat(PATH_DEL,"/.files/SESSION_HISTORY_FILE");
+  strcat(PATH_DEL, "/.files/SESSION_HISTORY_FILE");
 
   // printf("%s",PATH_DEL); // debug printf
 
@@ -42,36 +43,29 @@ int PSH_EXIT(char **token_arr) {
   // exit(exit_code);char
 }
 
-int PSH_CD(char **token_arr)
-{
+int PSH_CD(char **token_arr) {
   char *localdir = malloc(PATH_MAX);
   char *home = NULL;                   // for ~ and empty cases
   static char PREV_DIR[PATH_MAX] = ""; // for - cases
-  char * pathtoken=malloc(PATH_MAX);
+  char *pathtoken = malloc(PATH_MAX);
 
   strcpy(localdir, PATH);
-  if (localdir == NULL)
-  {
+  if (localdir == NULL) {
     perror("PSH: malloc() error");
     return 1;
   }
-  if(token_arr[1]!=NULL)
-  {
-    if((strcmp(token_arr[1], "-L") == 0 || strcmp(token_arr[1], "-P") == 0))  
-    {
-      if(token_arr[2]!=NULL)
-        strcpy(pathtoken,token_arr[2]);    
+  if (token_arr[1] != NULL) {
+    if ((strcmp(token_arr[1], "-L") == 0 || strcmp(token_arr[1], "-P") == 0)) {
+      if (token_arr[2] != NULL)
+        strcpy(pathtoken, token_arr[2]);
       else
-        pathtoken=NULL;
+        pathtoken = NULL;
+    } else {
+      if (token_arr[1] != NULL)
+        strcpy(pathtoken, token_arr[1]);
     }
-    else 
-    {
-      if(token_arr[1]!=NULL)
-      strcpy(pathtoken,token_arr[1]);
-    }
-  }
-  else {
-    pathtoken=NULL;
+  } else {
+    pathtoken = NULL;
   }
 
   if (pathtoken == NULL || strcmp(pathtoken, "~") == 0) {
@@ -83,8 +77,7 @@ int PSH_CD(char **token_arr)
     }
     strncpy(localdir, home, PATH_MAX - 1);
     localdir[PATH_MAX - 1] = '\0';
-  } 
-  else if (strcmp(pathtoken, "-") == 0) {
+  } else if (strcmp(pathtoken, "-") == 0) {
     if (PREV_DIR[0] == '\0') {
       fprintf(stderr, "PSH: No previous directory\n");
       free(localdir);
@@ -92,74 +85,58 @@ int PSH_CD(char **token_arr)
     }
     strncpy(localdir, PREV_DIR, PATH_MAX - 1);
     localdir[PATH_MAX - 1] = '\0';
-  }
-  else if (strcmp(pathtoken, "..") == 0)
-  {
-    if(strcmp(localdir,"/")==0)//For path inside / or root
+  } else if (strcmp(pathtoken, "..") == 0) {
+    if (strcmp(localdir, "/") == 0) // For path inside / or root
     {
-      strcpy(localdir,"/");
-    } 
-    else 
-    {
+      strcpy(localdir, "/");
+    } else {
       remove_last_component(localdir);
-      if(!strcmp(localdir ,""))
-      {
+      if (!strcmp(localdir, "")) {
         strcpy(localdir, "/");
       }
     }
-  }
-  else if (strcmp(pathtoken, "./") == 0)
-  {
-    if(strcmp(localdir,"/")==0)//For path inside / or root
+  } else if (strcmp(pathtoken, "./") == 0) {
+    if (strcmp(localdir, "/") == 0) // For path inside / or root
     {
-      strcpy(localdir,"/");
-    } 
-    else 
-    {
-      if(!strcmp(localdir ,""))
-      {
+      strcpy(localdir, "/");
+    } else {
+      if (!strcmp(localdir, "")) {
         strcpy(localdir, "/");
       }
     }
   }
 
-  else
-  {
-    if (pathtoken[0] != '/')
-    {
-      if(strcmp(PATH,"/")==0)
+  else {
+    if (pathtoken[0] != '/') {
+      if (strcmp(PATH, "/") == 0)
         snprintf(localdir, PATH_MAX, "/%s", pathtoken);
       else
         snprintf(localdir, PATH_MAX, "%s/%s", PATH, pathtoken);
-    }
-    else
-    {
+    } else {
       strncpy(localdir, pathtoken, PATH_MAX - 1);
       localdir[PATH_MAX - 1] = '\0';
     }
   }
-  char *rpath=malloc(PATH_MAX);
+  char *rpath = malloc(PATH_MAX);
   realpath(localdir, rpath);
-  if (chdir(rpath) == -1)
-  {
+  if (chdir(rpath) == -1) {
     // perror("PSH: chdir() error");
-    fprintf(stderr,"PSH:No such Directory \n");
+    fprintf(stderr, "PSH:No such Directory \n");
     free(localdir);
     free(rpath);
     free(pathtoken);
     return 1;
-  } 
-  int lastindex=strlen(localdir);
-  if(localdir[lastindex-1]=='/' && strlen(localdir)!=1)
-  {
-    localdir[lastindex-1]='\0';
-  }     
+  }
+  int lastindex = strlen(localdir);
+  if (localdir[lastindex - 1] == '/' && strlen(localdir) != 1) {
+    localdir[lastindex - 1] = '\0';
+  }
   strncpy(PREV_DIR, PATH, PATH_MAX - 1);
   PREV_DIR[PATH_MAX - 1] = '\0';
-  if(token_arr[1]!=NULL && strcmp(token_arr[1],"-P")==0)    
-    strcpy(PATH,rpath);
+  if (token_arr[1] != NULL && strcmp(token_arr[1], "-P") == 0)
+    strcpy(PATH, rpath);
   else
-    strcpy(PATH,localdir);
+    strcpy(PATH, localdir);
   free(localdir);
   free(rpath);
   free(pathtoken);
@@ -287,15 +264,14 @@ int PSH_PWD(char **token_arr) {
 
   // printf("%s\n", token_arr[1]); //debugging
   // printf("Printing current working directory\n"); //debugging
-  char *buffer=malloc(PATH_MAX);
+  char *buffer = malloc(PATH_MAX);
   char rpath[1024];
   // printf("%d\n", PATH_MAX);
 
   if (token_arr[1] == NULL ||
       strcmp(token_arr[1], "-L") == 0) // Default pwd and pwd -L
   {
-    if (PATH) 
-    {
+    if (PATH) {
       printf("%s\n", PATH);
     } else {
       perror("PSH: PATH error");
@@ -317,6 +293,19 @@ int PSH_PWD(char **token_arr) {
 int PSH_FC(char **token_arr) {
   int n = -1;
 
+  char MEMORY_HISTORY_FILE[PATH_MAX];
+  char SESSION_HISTORY_FILE[PATH_MAX];
+
+  char path_memory[PATH_MAX];
+  strcpy(path_memory, cwd);
+  strcat(path_memory, "/.files/MEMORY_HISTORY_FILE");
+  strcpy(MEMORY_HISTORY_FILE, path_memory);
+
+  char path_session[PATH_MAX];
+  strcpy(path_session, cwd);
+  strcat(path_session, "/.files/SESSION_HISTORY_FILE");
+  strcpy(SESSION_HISTORY_FILE, path_session);
+
   if (token_arr[1] == NULL) {
     n = 0;
   } else if ((strcmp(token_arr[1], "-l") == 0) &&
@@ -325,7 +314,7 @@ int PSH_FC(char **token_arr) {
                strcmp(token_arr[2], "-r") != 0))) { // fc -l 5 10
     n = 1;
 
-  } else if (((strcmp(token_arr[1], "-ln")) == 0) ||  
+  } else if (((strcmp(token_arr[1], "-ln")) == 0) ||
              ((strcmp(token_arr[1], "-nl")) == 0) ||
              (((strcmp(token_arr[1], "-l")) == 0) &&
               ((strcmp(token_arr[2], "-n")) == 0)) ||
@@ -351,18 +340,52 @@ int PSH_FC(char **token_arr) {
     n = 7;
   } else if ((strcmp(token_arr[1], "-p")) == 0) {
     n = 8;
+
+    // } else if ((((strcmp(token_arr[1], "-l")) == 0) &&
+    //             ((strcmp(token_arr[2], "-r")) == 0) &&
+    //             ((strcmp(token_arr[3], "-n")) == 0)) || // -l -r -n
+
+    //            (((strcmp(token_arr[1], "-r")) == 0) &&
+    //             ((strcmp(token_arr[2], "-n")) == 0) &&
+    //             ((strcmp(token_arr[3], "-l")) == 0)) || // -r- -n -l
+
+    //            (((strcmp(token_arr[1], "-n")) == 0) &&
+    //             ((strcmp(token_arr[2], "-l")) == 0) &&
+    //             ((strcmp(token_arr[3], "-r")) == 0)) || // -n -l -r
+
+    //            (((strcmp(token_arr[1], "-n")) == 0) &&
+    //             ((strcmp(token_arr[2], "-r")) == 0) &&
+    //             ((strcmp(token_arr[3], "-l")) == 0)) || // -n -r -l
+
+    //            (((strcmp(token_arr[1], "-r")) == 0) &&
+    //             ((strcmp(token_arr[2], "-l")) == 0) &&
+    //             ((strcmp(token_arr[3], "-n")) == 0)) || // -r -l -n
+
+    //            (((strcmp(token_arr[1], "-l")) == 0) &&
+    //             ((strcmp(token_arr[2], "-n")) == 0) &&
+    //             ((strcmp(token_arr[3], "-r")) == 0))) { // -l -n -r
+    //   n = 9;
+
+  } else if (((strcmp(token_arr[1], "-lnr")) == 0) ||
+             ((strcmp(token_arr[1], "-nrl")) == 0) ||
+             ((strcmp(token_arr[1], "-rln")) == 0) ||
+             ((strcmp(token_arr[1], "-rnl")) == 0) ||
+             ((strcmp(token_arr[1], "-nlr")) == 0) ||
+             ((strcmp(token_arr[1], "-lrn")) == 0)) {
+    n = 10;
+
   } else {
-    printf("psh: fc: missing history argument");
+    printf("psh: fc: missing history argument\n");
     return 1;
   }
   switch (n) {
 
   case 0: {
-    printf("psh: fc: missing history argument");
+    printf("psh: fc: missing history argument\n");
     break;
   }
-    // fc -l 20 50
-  case 1: { // SEGMENTATION FAULT FOR just fc -l. Others work
+
+  case 1: { // fc -l 20 50
     if (token_arr[2] == NULL) {
       int total_lines = count_lines(MEMORY_HISTORY_FILE);
       read_lines(MEMORY_HISTORY_FILE, 1, total_lines);
@@ -375,8 +398,7 @@ int PSH_FC(char **token_arr) {
     break;
   }
 
-  case 2: { // fc -l -n 20 50 (works)      fc -ln 20 50 (doesn't work) NEEDS TO
-            // BE FIXED
+  case 2: { // fc -l -n 20 50 (works)      fc -ln 20 50 (works)
     if (token_arr[2] == NULL) {
       int total_lines = count_lines(MEMORY_HISTORY_FILE);
       read_lines_wo_no(MEMORY_HISTORY_FILE, 1, total_lines);
@@ -394,7 +416,8 @@ int PSH_FC(char **token_arr) {
       read_lines_wo_no(MEMORY_HISTORY_FILE, atoi(token_arr[3]),
                        atoi(token_arr[4]));
 
-    } else if (token_arr[2] != NULL && token_arr[3] != NULL && token_arr[4]==NULL) {
+    } else if (token_arr[2] != NULL && token_arr[3] != NULL &&
+               token_arr[4] == NULL) {
       read_lines_wo_no(MEMORY_HISTORY_FILE, atoi(token_arr[3]),
                        atoi(token_arr[4]));
     }
@@ -402,7 +425,7 @@ int PSH_FC(char **token_arr) {
     break;
   }
 
-  case 3: { // fc -l -r 20 50 (works)      fc -lr 20 50 (doesn't work)
+  case 3: { // fc -l -r 20 50 (works)      fc -lr 20 50 (works)
     if (token_arr[2] == NULL) {
       int total_lines = count_lines(MEMORY_HISTORY_FILE);
       read_lines_reverse(MEMORY_HISTORY_FILE, 1, total_lines);
@@ -439,10 +462,10 @@ int PSH_FC(char **token_arr) {
       int total_lines = count_lines(MEMORY_HISTORY_FILE);
       start = end = total_lines;
     } else if (token_arr[4] == NULL) {
-      // Edit single specified command
+      // Editing single specified command
       start = end = atoi(token_arr[3]);
     } else {
-      // Edit range of commands
+      // Editing range of commands
       start = atoi(token_arr[3]);
       end = atoi(token_arr[4]);
     }
@@ -524,7 +547,7 @@ int PSH_FC(char **token_arr) {
       line_number = total_lines;
     }
 
-    // Read the specified command from history
+    // Reading the specified command from history
     FILE *history = fopen(MEMORY_HISTORY_FILE, "r");
     if (history == NULL) {
       perror("Error opening history file");
@@ -539,7 +562,7 @@ int PSH_FC(char **token_arr) {
     while ((read = getline(&line, &len, history)) != -1) {
       current_line++;
       if (current_line == line_number) {
-        // Remove newline character
+        // Removing newline character
         line[strcspn(line, "\n")] = 0;
         break;
       }
@@ -553,7 +576,7 @@ int PSH_FC(char **token_arr) {
       return 1;
     }
 
-    // Perform string replacement if specified
+    // Performing string replacement if specified
     if (old_word != NULL && new_word != NULL) {
       char *replaced_line =
           malloc(len * 2); // Allocate more space for potential expansion
@@ -565,7 +588,7 @@ int PSH_FC(char **token_arr) {
 
       char *pos = strstr(line, old_word);
       if (pos != NULL) {
-        // Perform the replacement
+        // Performing the replacement
         strncpy(replaced_line, line, pos - line);
         replaced_line[pos - line] = '\0';
         strcat(replaced_line, new_word);
@@ -612,18 +635,18 @@ int PSH_FC(char **token_arr) {
       return 1;
     }
 
-    // Count total lines in global history
+    // Counting total lines in global history
     int total_lines = count_lines(MEMORY_HISTORY_FILE);
     // printf("Total lines %d\n", total_lines);
 
-    // Parse the offset
+    // Parsing the offset
     long offset = strtol(token_arr[2], NULL, 10);
     size_t line_to_remove;
 
     if (offset > 0) {
       line_to_remove = (size_t)offset;
     } else if (offset < 0) {
-      // Handle negative offset
+      // Handling negative offset
       if ((size_t)(-offset) > total_lines) {
         printf("psh: history -d: %ld: history position out of range\n", offset);
         fclose(fp1);
@@ -636,7 +659,7 @@ int PSH_FC(char **token_arr) {
       return 1;
     }
 
-    // Check if line_to_remove is within range
+    // Checking if line_to_remove is within range
     if (line_to_remove > total_lines) {
       printf("psh: history -d: %zu: history position out of range\n",
              line_to_remove);
@@ -644,7 +667,7 @@ int PSH_FC(char **token_arr) {
       return 1;
     }
 
-    // Remove the line the memory history file
+    // Removing the line the memory history file
     remove_line(MEMORY_HISTORY_FILE, line_to_remove);
 
     printf("Removed line %zu from history.\n", line_to_remove);
@@ -680,6 +703,51 @@ int PSH_FC(char **token_arr) {
       i++;
     }
 
+    // case 11: // fc -l -n -r 20 50
+    // {
+    //   if (token_arr[3] != NULL && token_arr[4] == NULL) {
+    //     printf("TESTING %s\n", token_arr[4]);
+    //     int total_lines = count_lines(MEMORY_HISTORY_FILE);
+    //     read_lines_reverse_wo_no(MEMORY_HISTORY_FILE, 1, total_lines);
+    //   }
+
+    //   else if (token_arr[5] == NULL) {
+    //     int total_lines = count_lines(MEMORY_HISTORY_FILE);
+    //     read_lines_reverse_wo_no(MEMORY_HISTORY_FILE, atoi(token_arr[4]),
+    //                              total_lines);
+    //   }
+
+    //   else if (token_arr[4] != NULL && token_arr[5] != NULL) {
+    //     read_lines_reverse_wo_no(MEMORY_HISTORY_FILE, atoi(token_arr[4]),
+    //                              atoi(token_arr[5]));
+    //   } else {
+    //     printf("fc: too many arguments");
+    //   }
+    //   break;
+    // }
+
+  case 10: // fc -lnr 20 50
+  {
+    if (token_arr[2] == NULL) {
+      int total_lines = count_lines(MEMORY_HISTORY_FILE);
+      read_lines_reverse_wo_no(MEMORY_HISTORY_FILE, 1, total_lines);
+    }
+
+    else if (token_arr[3] == NULL) {
+      int total_lines = count_lines(MEMORY_HISTORY_FILE);
+      read_lines_reverse_wo_no(MEMORY_HISTORY_FILE, atoi(token_arr[2]),
+                               total_lines);
+    }
+
+    else if (token_arr[2] != NULL && token_arr[3] != NULL) {
+      read_lines_reverse_wo_no(MEMORY_HISTORY_FILE, atoi(token_arr[2]),
+                               atoi(token_arr[3]));
+    } else {
+      printf("fc: too many arguments");
+    }
+    break;
+  }
+
     fclose(global_history);
     fclose(session_history);
     return 1;
@@ -694,140 +762,123 @@ int PSH_FC(char **token_arr) {
   return 1;
 }
 
-int PSH_EXPORT(char **token_arr) 
-{
-    if (token_arr[1] == NULL || strcmp(token_arr[1], "-p") == 0) // default null or -p option
-    {
-        extern char **environ;
+int PSH_EXPORT(char **token_arr) {
+  if (token_arr[1] == NULL ||
+      strcmp(token_arr[1], "-p") == 0) // default null or -p option
+  {
+    extern char **environ;
 
-        // find no of entries in environ
-        int env_length = 0;
-        while (environ[env_length] != NULL) 
-        {
-            env_length++;
-        }
-
-        sort_strings(environ, env_length); // sort environment variables
-
-        int i = 0;
-        while (environ[i] != NULL) 
-        {
-            printf("declare -x %s\n", environ[i]); //print all env variables
-            i++;
-        }
-    } 
-    else if (strcmp(token_arr[1], "-f") == 0) // functions
-    {
-        // int found = 0;
-        // for (int i = 0; i < num_funcs; i++) 
-        // {
-        //     printf("%s\n%s\n", global_funcs[i].func_name, global_funcs[i].func_def);
-        //     if (strcmp(token_arr[2], global_funcs[i].func_name) == 0) 
-        //     {
-        //         if (setenv(global_funcs[i].func_name, global_funcs[i].func_def, 1) != 0) 
-        //         {
-        //             perror("PSH: setenv() error");
-        //         }
-        //         found = 1;
-        //         break;
-        //     }
-        // }
-
-        // if (!found) 
-        // {
-        //     if (strchr(token_arr[2], '{')) 
-        //     {
-        //         char *func_name = strtok(token_arr[2], "{");
-        //         char *func_value_start = strchr(token_arr[2], '{');
-
-        //         if (func_value_start != NULL) 
-        //         {
-        //             char *func_value_end = strrchr(token_arr[2], '}');
-        //             if (func_value_end != NULL) 
-        //             {
-        //                 size_t func_value_length = func_value_end - func_value_start + 1;
-        //                 char *func_value = malloc(func_value_length);
-        //                 strncpy(func_value, func_value_start, func_value_length - 1);
-        //                 func_value[func_value_length - 1] = '\0';
-
-        //                 // Set the environment variable
-        //                 if (setenv(func_name, func_value, 1) != 0) 
-        //                 {
-        //                     perror("PSH: setenv() error");
-        //                 }
-
-        //                 free(func_value);
-        //             } 
-        //             else 
-        //             {
-        //                 fprintf(stderr, "PSH: Invalid function definition\n");
-        //             }
-        //         } 
-        //         else 
-        //         {
-        //             fprintf(stderr, "PSH: Invalid function definition\n");
-        //         }
-        //     } 
-        //     else 
-        //     {
-        //         fprintf(stderr, "PSH: Invalid function definition\n");
-        //     }
-        // }
-    } 
-    else if (strcmp(token_arr[1], "-n") == 0) // removing and env variable
-    {
-        if (token_arr[2] != NULL) 
-        {
-            if (unsetenv(token_arr[2]) != 0) 
-            {
-                perror("PSH: unsetenv() error");
-            }
-        }
-    } 
-    else 
-    {
-        // setting a variable as an env variable
-        int found = 0;
-        for (int i = 0; i < num_vars; i++) 
-        {
-            if (strcmp(token_arr[1], global_vars[i].var_name) == 0) 
-            {
-                if (setenv(global_vars[i].var_name, global_vars[i].var_value, 1) != 0) 
-                {
-                    perror("PSH: setenv() error");
-                }
-                found = 1;
-                break;
-            }
-        }
-
-        if (!found) 
-        {
-            if (strchr(token_arr[1], '=')) 
-            {
-                char *var_name = strtok(token_arr[1], "=");
-                char *var_value = strtok(NULL, "=");
-
-                if (var_value != NULL) 
-                {
-                    // Set the environment variable
-                    if (setenv(var_name, var_value, 1) != 0) 
-                    {
-                        perror("PSH: setenv() error");
-                    }
-                } 
-                else 
-                {
-                    fprintf(stderr, "PSH: Invalid variable assignment\n");
-                }
-            } 
-            else 
-            {
-                fprintf(stderr, "Unknown option: %s\n", token_arr[1]);
-            }
-        }
+    // find no of entries in environ
+    int env_length = 0;
+    while (environ[env_length] != NULL) {
+      env_length++;
     }
 
-    return 1;
-}
+    sort_strings(environ, env_length); // sort environment variables
 
+    int i = 0;
+    while (environ[i] != NULL) {
+      printf("declare -x %s\n", environ[i]); // print all env variables
+      i++;
+    }
+  } else if (strcmp(token_arr[1], "-f") == 0) // functions
+  {
+    // int found = 0;
+    // for (int i = 0; i < num_funcs; i++)
+    // {
+    //     printf("%s\n%s\n", global_funcs[i].func_name,
+    //     global_funcs[i].func_def); if (strcmp(token_arr[2],
+    //     global_funcs[i].func_name) == 0)
+    //     {
+    //         if (setenv(global_funcs[i].func_name, global_funcs[i].func_def,
+    //         1) != 0)
+    //         {
+    //             perror("PSH: setenv() error");
+    //         }
+    //         found = 1;
+    //         break;
+    //     }
+    // }
+
+    // if (!found)
+    // {
+    //     if (strchr(token_arr[2], '{'))
+    //     {
+    //         char *func_name = strtok(token_arr[2], "{");
+    //         char *func_value_start = strchr(token_arr[2], '{');
+
+    //         if (func_value_start != NULL)
+    //         {
+    //             char *func_value_end = strrchr(token_arr[2], '}');
+    //             if (func_value_end != NULL)
+    //             {
+    //                 size_t func_value_length = func_value_end -
+    //                 func_value_start + 1; char *func_value =
+    //                 malloc(func_value_length); strncpy(func_value,
+    //                 func_value_start, func_value_length - 1);
+    //                 func_value[func_value_length - 1] = '\0';
+
+    //                 // Set the environment variable
+    //                 if (setenv(func_name, func_value, 1) != 0)
+    //                 {
+    //                     perror("PSH: setenv() error");
+    //                 }
+
+    //                 free(func_value);
+    //             }
+    //             else
+    //             {
+    //                 fprintf(stderr, "PSH: Invalid function definition\n");
+    //             }
+    //         }
+    //         else
+    //         {
+    //             fprintf(stderr, "PSH: Invalid function definition\n");
+    //         }
+    //     }
+    //     else
+    //     {
+    //         fprintf(stderr, "PSH: Invalid function definition\n");
+    //     }
+    // }
+  } else if (strcmp(token_arr[1], "-n") == 0) // removing and env variable
+  {
+    if (token_arr[2] != NULL) {
+      if (unsetenv(token_arr[2]) != 0) {
+        perror("PSH: unsetenv() error");
+      }
+    }
+  } else {
+    // setting a variable as an env variable
+    int found = 0;
+    for (int i = 0; i < num_vars; i++) {
+      if (strcmp(token_arr[1], global_vars[i].var_name) == 0) {
+        if (setenv(global_vars[i].var_name, global_vars[i].var_value, 1) != 0) {
+          perror("PSH: setenv() error");
+        }
+        found = 1;
+        break;
+      }
+    }
+
+    if (!found) {
+      if (strchr(token_arr[1], '=')) {
+        char *var_name = strtok(token_arr[1], "=");
+        char *var_value = strtok(NULL, "=");
+
+        if (var_value != NULL) {
+          // Set the environment variable
+          if (setenv(var_name, var_value, 1) != 0) {
+            perror("PSH: setenv() error");
+          }
+        } else {
+          fprintf(stderr, "PSH: Invalid variable assignment\n");
+        }
+      } else {
+        fprintf(stderr, "Unknown option: %s\n", token_arr[1]);
+      }
+    }
+  }
+
+  return 1;
+}

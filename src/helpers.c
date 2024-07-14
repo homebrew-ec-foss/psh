@@ -181,6 +181,20 @@ void delete_file(const char *filename) {
 }
 
 void clear_session_history() {
+  char MEMORY_HISTORY_FILE[PATH_MAX];
+  char SESSION_HISTORY_FILE[PATH_MAX];
+
+  char path_memory[PATH_MAX];
+  strcpy(path_memory, cwd);
+  strcat(path_memory, "/.files/MEMORY_HISTORY_FILE");
+  strcpy(MEMORY_HISTORY_FILE, path_memory);
+
+
+  char path_session[PATH_MAX];
+  strcpy(path_session, cwd);
+  strcat(path_session, "/.files/SESSION_HISTORY_FILE");
+  strcpy(SESSION_HISTORY_FILE, path_session);
+
   FILE *global_fp, *session_fp, *temp_fp;
   char *global_line = NULL, *session_line = NULL;
   size_t global_len = 0, session_len = 0;
@@ -251,6 +265,61 @@ char *expand_history(const char *arg, FILE *history_file) {
 
   return expanded ? expanded : strdup(arg);
 }
+
+void read_lines_reverse_wo_no(const char *filename, int low_lim, int up_lim) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Error:");
+        return;
+    }
+
+    char **lines = NULL;
+    size_t size = 0;
+    size_t capacity = 10;
+    lines = malloc(capacity * sizeof(char *));
+    if (lines == NULL) {
+        perror("Error:");
+        fclose(file);
+        return;
+    }
+
+    char *line = NULL;
+    size_t len = 0;
+    size_t line_no = 1;
+
+    while (getline(&line, &len, file) != -1) {
+        if (line_no >= low_lim && line_no <= up_lim) {
+            if (size == capacity) {
+                capacity *= 2;
+                lines = realloc(lines, capacity * sizeof(char *));
+                if (lines == NULL) {
+                    perror("Error:");
+                    free(line);
+                    fclose(file);
+                    return;
+                }
+            }
+            // Storing the line without the line number
+            lines[size++] = strdup(line);
+        }
+        line_no++;
+        if (line_no > up_lim) {
+            break;
+        }
+    }
+
+    fclose(file);
+    if (line) {
+        free(line);
+    }
+
+    for (size_t i = size; i > 0; i--) {
+        printf("%s", lines[i - 1]);
+        free(lines[i - 1]);
+    }
+    free(lines);
+}
+
 int compare_strings(const void *a, const void *b)
 {
   return strcmp(*(const char **)a, *(const char **)b);
