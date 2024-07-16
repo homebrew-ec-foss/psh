@@ -72,77 +72,57 @@ int PSH_READ(void) {
     fclose(fp1);
     fclose(fp2);
 
-    char **token_arr = PSH_TOKENIZER(inputline);
-    if (token_arr[0] != NULL) // fixed \n giving seg fault
-    {
-      // if (strchr(inputline,'(') && strchr(inputline, ')'))
-      // {
-      //   char *func_name = strtok(inputline, "(");
-      //   char *func_def_start = strtok(NULL, ")");
-      //   if (func_def_start != NULL)
-      //   {
-      //     char func_def[1024];
-      //     strcpy(func_def, func_def_start);
-      //     struct Func new_func;
-      //     strcpy(new_func.func_name, func_name);
-      //     strcpy(new_func.func_def, func_def);
-      //     if(num_funcs < MAX_FUNCS)
-      //     {
-      //       global_funcs[num_funcs++] = new_func;
-      //     }
-      //     else
-      //     {
-      //       fprintf(stderr, "PSH: Maximum number of functions exceeded\n");
-      //     }
-      //   }
-      //   else
-      //   {
-      //     fprintf(stderr, "PSH: Invalid function definition\n");
-      //   }
-      //   free(token_arr);
-      //   continue;
-      // }
-      if (strchr(token_arr[0], '=')) // checks for variable assignment
-      {
-        char *var_name = strtok(token_arr[0], "=");
-        char *var_value = strtok(NULL, "=");
-        if (var_value != NULL)
+        char **commands = split_commands(inputline);
+        for (int i = 0; commands[i] != NULL; i++)
         {
-          if (num_vars < MAX_VARS)
-          {
-            //stores variables in global struct
-            strcpy(global_vars[num_vars].var_name, var_name);
-            strcpy(global_vars[num_vars].var_value, var_value);
-            num_vars++;
-          }
-          else
-          {
-            fprintf(stderr, "PSH: Invalid variable assignment\n");
-          }
-          free(token_arr);
-          continue;
+            char **token_arr = PSH_TOKENIZER(commands[i]);
+            if (token_arr[0] != NULL)
+            {
+                if (strchr(token_arr[0], '='))
+                {
+                    char *var_name = strtok(token_arr[0], "=");
+                    char *var_value = strtok(NULL, "=");
+                    if (var_value != NULL)
+                    {
+                        if (num_vars < MAX_VARS)
+                        {
+                            strcpy(global_vars[num_vars].var_name, var_name);
+                            strcpy(global_vars[num_vars].var_value, var_value);
+                            num_vars++;
+                        }
+                        else
+                        {
+                            fprintf(stderr, "PSH: Invalid variable assignment\n");
+                        }
+                        free(token_arr);
+                        continue;
+                    }
+                }
+                int isinbuilt = 0;
+                for (int j = 0; j < size_builtin_str; j++)
+                {
+                    if (strcmp(token_arr[0], builtin_str[j]) == 0)
+                    {
+                        if (!strcmp(token_arr[0], "exit"))
+                        {
+                            run = (*builtin_func[j])(token_arr);
+                            free(inputline);
+                            exit(run);
+                        }
+                        run = (*builtin_func[j])(token_arr);
+                        isinbuilt = 1;
+                        break;
+                    }
+                }
+                if (!isinbuilt)
+                {
+                    run = PSH_EXEC_EXTERNAL(token_arr);
+                }
+                free(token_arr);
+            }
         }
-      }
-      int isinbuilt = 0;
-      for (int i = 0; i < size_builtin_str; i++) {
-        if (strcmp(token_arr[0], builtin_str[i]) == 0) {
-          if (!strcmp(token_arr[0], "exit")) {
-            run = (*builtin_func[i])(token_arr);
-            free(inputline);
-            exit(run);
-          }
-          run = (*builtin_func[i])(token_arr);
-          isinbuilt = 1;
-          break;
-        } // frees token_arr
-      }
-      if (!isinbuilt)
-      {
-        run = PSH_EXEC_EXTERNAL(token_arr);
-      }
-      free(token_arr);
+        free(commands);
     }
-  }
-  free(inputline);
-  return run;
+    free(inputline);
+    return run;
 }

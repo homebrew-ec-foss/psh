@@ -69,5 +69,5 @@ void read_lines_reverse_wo_no(const char *, int, int);
 char *expand_history(const char *, FILE *);
 int compare_strings(const void *, const void *);
 void sort_strings(char **, int);
-
+char **split_commands(char *input);
 #endif

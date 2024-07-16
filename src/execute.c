@@ -1,5 +1,47 @@
 #include "psh.h"
 
+// Helper function to split the input line by ';'
+char **split_commands(char *input)
+{
+    size_t bufsize = 64, position = 0;
+    char **commands = malloc(bufsize * sizeof(char *));
+    char *command;
+
+    if (!commands)
+    {
+        fprintf(stderr, "psh: allocation error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    command = strtok(input, ";");
+    while (command != NULL)
+    {
+        commands[position] = malloc((strlen(command) + 1) * sizeof(char));
+        if (!commands[position])
+        {
+            fprintf(stderr, "psh: allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        strcpy(commands[position], command);
+        position++;
+
+        if (position >= bufsize)
+        {
+            bufsize += 64;
+            commands = realloc(commands, bufsize * sizeof(char *));
+            if (!commands)
+            {
+                fprintf(stderr, "psh: allocation error\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        command = strtok(NULL, ";");
+    }
+    commands[position] = NULL;
+    return commands;
+}
+
 char **PSH_TOKENIZER(char *line)
 {
   size_t bufsize = 64, position = 0, i;
@@ -92,7 +134,6 @@ char **PSH_TOKENIZER(char *line)
   // }
   return token_arr;
 }
-
 
 int PSH_EXEC_EXTERNAL(char **token_arr)
 {
