@@ -1,6 +1,6 @@
 #include "psh.h"
 // #include <cstdio>
-#include <linux/limits.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -271,6 +271,7 @@ int PSH_PWD(char **token_arr) {
   if (token_arr[1] == NULL ||
       strcmp(token_arr[1], "-L") == 0) // Default pwd and pwd -L
   {
+    // Write better check, statement always evaluates to true.
     if (PATH) {
       printf("%s\n", PATH);
     } else {

@@ -1,0 +1,9 @@
+clear
+pwd
+clear
+pwd
+cd ..
+clear
+pwd
+pwd -P
+cd ..

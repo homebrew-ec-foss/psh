@@ -1,0 +1,13 @@
+ln -s link ~/Developer
+cd ~
+cd src/hello
+cd ../..
+cd -
+cd -
+cd -
+clear
+exit
+pwd
+clear
+man pwd
+exit
