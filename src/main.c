@@ -1,6 +1,6 @@
 // main.c
 #include "psh.h"
-#include <limits.h>
+#include <linux/limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
