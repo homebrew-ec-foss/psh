@@ -12,7 +12,8 @@ This project is a custom implementation of a shell written in C. It aims to achi
 ## Mentors:
 - Nathan Paul
 - Tejas R
-- Anupam G
+- Anupam G  
+- Navneet Nayak
 
 ## Progress by End of Week 2:
 Handing off from the progress we made in week1 where we succesfully began the implementations for few built in functions  
@@ -41,8 +42,6 @@ compliant, we changed it to `fc`. We added extensive support for symlinks for be
 ### How to Build and Run:
 ```bash
 cd psh
-make run
-<<<<<<< HEAD
-./run
-=======
->>>>>>> e32d55693f1ad0dd856c5091dc3023da7c146333
+make run  
+```
+
