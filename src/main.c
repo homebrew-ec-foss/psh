@@ -46,6 +46,18 @@ int PSH_READ(void) {
     // getline takes \n as a part of string when pressed enter this.
     // line is used to remove that \n and changing it blank space
 
+     // Ignore comments starting with '#'
+        char *comment_pos = strchr(inputline, '#');
+        if (comment_pos) {
+            *comment_pos = '\0';
+        }
+
+        // Skip processing if the line becomes empty after stripping comments
+        if (inputline[0] == '\0') {
+            continue;
+        }
+
+
     // Writing the commands to the global and session history file
     FILE *fp1;
     FILE *fp2;
