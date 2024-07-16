@@ -14,8 +14,12 @@ This project is a custom implementation of a shell written in C. It aims to achi
 - Tejas R
 - Anupam G
 
-## Progress by End of Week 1:
-We have implemented the basic structure of a shell and execution of some built-in and other external commands.
+## Progress by End of Week 2:
+Handing off from the progress we made in week1 where we succesfully began the implementations for few built in functions  
+such as cd and history, we began adding extensive support for all possible flags for these functions. We now have almost  
+all posix like required flags for functions such as `cd`,`exit`,`echo`,`pwd`,`export`,`fc`. While trying to implement   
+the history function, we learned that history is not POSIX compliant. In order to make sure that psh is POSIX like  
+compliant, we changed it to `fc`. We added extensive support for symlinks for better ease of directory movements.
 
 ## Current Workflow:
 1. **Read Input**: Read an input from the user.
@@ -25,13 +29,20 @@ We have implemented the basic structure of a shell and execution of some built-i
    - Call the corresponding function and return the result.
 4. **Loop**: Go back to reading an input infinitely until `exit` is called.
 
+
 ## Future Work:
-- Create functions for all built-in commands.
-- Extensively debug all functions with all possible arguments and flags.
-- Handle signals and arrow keys.
-- Add tab completion.
+- Finish all built in functions  
+- Arrow keys  
+- Handling signals  
+- Shell expansion  
+- Bug Fixes  
+- Read and parse .sh files  
 
 ### How to Build and Run:
 ```bash
 cd psh
 make run
+<<<<<<< HEAD
+./run
+=======
+>>>>>>> e32d55693f1ad0dd856c5091dc3023da7c146333
