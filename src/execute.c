@@ -50,7 +50,7 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
     if (execvp(token_arr[0], token_arr) ==
         -1) // executes the binary file with args
     {
-      perror("psh failed");
+      fprintf(stdout, "psh: No command found: %s\n", token_arr[0]);
     }
     exit(EXIT_FAILURE);
   }

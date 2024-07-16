@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 
-
+// Unused Parameters
 int main(int argc, char **argv, char **envp) {
   printf("Welcome to psh!\n");
   // printf("%s@", getenv("USER"));
@@ -18,7 +18,7 @@ int main(int argc, char **argv, char **envp) {
   return PSH_READ();
 }
 
-int PSH_READ() {
+int PSH_READ(void) {
   size_t n = 0;
   int run = 1;
   char *inputline = NULL;        // NULL is required to avoind conflicts with getline function
@@ -29,9 +29,9 @@ int PSH_READ() {
     char last_component[PATH_MAX];
     get_last_path_component(PATH, last_component);
 
-    if(strcmp(PATH, "/") == 0) 
+    if(strcmp(PATH, "/") == 0)
       printf("%s@PSH → %s $ ", getenv("USER"), "/");
-    
+
     else
       printf("%s@PSH → %s $ ", getenv("USER"), last_component);
 
@@ -45,7 +45,7 @@ int PSH_READ() {
     inputline[strcspn(inputline, "\n")] = '\0';
     // getline takes \n as a part of string when pressed enter this.
     // line is used to remove that \n and changing it blank space
-    
+
     // Writing the commands to the global and session history file
     FILE *fp1;
     FILE *fp2;

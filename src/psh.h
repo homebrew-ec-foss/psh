@@ -2,7 +2,7 @@
 #ifndef PSH_H
 #define PSH_H
 
-// Our Headers 
+// Our Headers
 #include "builtin.h"
 
 // C Headers
@@ -20,7 +20,7 @@
 // #define MAX_FUNCS 100
 
 // Defining Structs to hold variables and functions
-struct Variable 
+struct Variable
 {
     char var_name[64];
     char var_value[256];
@@ -49,7 +49,7 @@ extern int num_vars; // Number of variables currently stored
 // Function Declarations
 
 // main.c functions
-int PSH_READ();
+int PSH_READ(void);
 
 // execute.c functions
 char **PSH_TOKENIZER(char *);
@@ -61,11 +61,11 @@ void get_last_path_component(const char *, char *);
 void delete_file(const char *);
 void read_lines(const char *, int, int);
 void read_lines_wo_no(const char *, int, int);
-int count_lines(const char *); 
+int count_lines(const char *);
 void read_lines_reverse(const char *, int, int);
 void remove_line(const char *, size_t);
-void clear_session_history();
-void read_lines_reverse_wo_no(const char *, int, int); 
+void clear_session_history(void);
+void read_lines_reverse_wo_no(const char *, int, int);
 char *expand_history(const char *, FILE *);
 int compare_strings(const void *, const void *);
 void sort_strings(char **, int);
