@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/wait.h>
-#include <limits.h>
+#include <linux/limits.h>
 
 #define MAX_HISTORY 1024
 #define MAX_LINE_LENGTH 1024
@@ -39,22 +39,26 @@ extern int size_builtin_str;
 extern char PREV_DIR[PATH_MAX];
 extern char PATH[PATH_MAX];
 
-
 extern struct Variable global_vars[MAX_VARS]; // Global array to store variables
-extern int num_vars; // Number of variables currently stored
+extern int num_vars;                          // Number of variables currently stored
 // struct Func global_funcs[MAX_FUNCS];
 // int num_funcs = 0;
-
 
 // Function Declarations
 
 // main.c functions
 int PSH_SCRIPT(const char *);
-int PSH_READ(void);
+int PSH_LOOP(void);
+// int PSH_READ(void);      //now split up to be more modular
 
 // execute.c functions
 char **PSH_TOKENIZER(char *);
 int PSH_EXEC_EXTERNAL(char **);
+void handle_input(char **, size_t *);
+void save_history(const char *);
+void process_commands(char *, int *);
+void execute_command(char **, int *);
+
 
 // helper functions
 void free_double_pointer(char **array);
@@ -71,5 +75,5 @@ void read_lines_reverse_wo_no(const char *, int, int);
 char *expand_history(const char *, FILE *);
 int compare_strings(const void *, const void *);
 void sort_strings(char **, int);
-char **split_commands(char *input);
+char **split_commands(char *);
 #endif

@@ -59,7 +59,7 @@ bin
 psh
 
 #vscode
-src/build/
+build/
 .vscode/
 test/
 main

@@ -1,42 +1,52 @@
-# create .files directory before executing
 DIR := .files
-create_dir : 
-	mkdir -p $(DIR)
-all: create_dir
-	@echo "$(DIR) created or already exists"
 
 CC = gcc
-#CFLAGS = -g -Wall -Wextra -pedantic -Werror
 CFLAGS = -g -Wall -Wextra -pedantic
 SRCDIR = src
 BINDIR = bin
-INCDIR = include
+INCDIR = src
 EXECUTABLE = $(BINDIR)/psh
-
 SOURCES = $(wildcard $(SRCDIR)/*.c)
 OBJECTS = $(SOURCES:$(SRCDIR)/%.c=$(BINDIR)/%.o)
 
-.PHONY: all clean run valgrind
+# Targets
+.PHONY: all clean run valgrind debug create_dir
 
-all: $(BINDIR) $(EXECUTABLE)
+# Default target
+all: create_dir $(BINDIR) $(EXECUTABLE)
 
+# Ensure the .files directory exists
+create_dir: 
+	@echo "Creating directory $(DIR)"
+	mkdir -p $(DIR)
+
+# Ensure the bin directory exists
 $(BINDIR):
+	@echo "Creating directory $(BINDIR)"
 	mkdir -p $(BINDIR)
 
+# Build the executable from object files
 $(EXECUTABLE): $(OBJECTS)
+	@echo "Linking executable $@"
 	$(CC) $(CFLAGS) -o $@ $(OBJECTS)
 
-$(BINDIR)/%.o: $(SRCDIR)/%.c
+# Compile source files into object files
+$(BINDIR)/%.o: $(SRCDIR)/%.c | $(BINDIR)
+	@echo "Compiling $< into $@"
 	$(CC) $(CFLAGS) -I$(INCDIR) -c -o $@ $<
 
+# Clean up object files and executable
 clean:
 	rm -rf $(BINDIR)/*
 
+# Run the executable
 run: all
 	./$(EXECUTABLE)
 
+# Run Valgrind on the executable
 valgrind: all
-	valgrind --tool=memcheck --leak-check=yes --leak-check=full ./$(EXECUTABLE) -s
+	valgrind --tool=memcheck --leak-check=yes --leak-check=full ./$(EXECUTABLE)
 
+# Debug with GDB
 debug: all
 	gdb ./$(EXECUTABLE)
