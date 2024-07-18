@@ -56,6 +56,7 @@ char **PSH_TOKENIZER(char *);
 int PSH_EXEC_EXTERNAL(char **);
 
 // helper functions
+void free_double_pointer(char **array);
 void remove_last_component(char *);
 void get_last_path_component(const char *, char *);
 void delete_file(const char *);

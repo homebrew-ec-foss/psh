@@ -1,6 +1,15 @@
 // helpers.c
 #include "psh.h"
 
+void free_double_pointer(char **array) {
+    if (array == NULL) {
+        return;
+    }
+    for (int i = 0; array[i] != NULL; i++) {
+        free(array[i]);
+    }
+    free(array);
+}
 
 void remove_last_component(char *path) {
   char *last_slash = strrchr(path, '/');
