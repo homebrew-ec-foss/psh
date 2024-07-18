@@ -36,7 +36,7 @@ run: all
 	./$(EXECUTABLE)
 
 valgrind: all
-	valgrind --leak-check=full ./$(EXECUTABLE) -s
+	valgrind --tool=memcheck --leak-check=yes --leak-check=full ./$(EXECUTABLE) -s
 
 debug: all
 	gdb ./$(EXECUTABLE)
