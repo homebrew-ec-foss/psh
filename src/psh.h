@@ -49,6 +49,7 @@ extern int num_vars; // Number of variables currently stored
 // Function Declarations
 
 // main.c functions
+int PSH_SCRIPT(const char *);
 int PSH_READ(void);
 
 // execute.c functions

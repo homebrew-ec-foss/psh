@@ -8,6 +8,12 @@
 // Unused Parameters
 int main(int argc, char **argv, char **envp) {
   printf("Welcome to psh!\n");
+
+  if(argc == 2)
+  {
+      return PSH_SCRIPT(argv[1]);
+  }
+
   // printf("%s@", getenv("USER"));
   // for (int i=0; envp[i]!=NULL; i++) {  // accessing all env variables
   //       printf("%d: %s\n", i, envp[i]);
@@ -137,4 +143,55 @@ int PSH_READ(void) {
     }
     free(inputline);
     return run;
+}
+
+
+int PSH_SCRIPT(const char *file) {
+
+  FILE *script = fopen(file, "r");
+  if (script == NULL) {
+    fprintf(stderr, "FILE open failed");
+    return -1;
+  }
+
+  else {
+    char **script_lines = NULL;
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    int line_count = 0;
+
+    // Read lines and store them in the array
+    while ((read = getline(&line, &len, script)) != -1) {
+      script_lines = realloc(script_lines, sizeof(char *) * (line_count + 1));
+      if (script_lines == NULL) {
+        fprintf(stderr, "Memory allocation failed");
+        fclose(script);
+        free(line);
+        return -1;
+      }
+
+      // Remove newline character if present
+      if (line[read - 1] == '\n') {
+        line[read - 1] = '\0';
+      }
+
+      script_lines[line_count] = strdup(line);
+      line_count++;
+    }
+
+    for (int i = 0; script_lines[i] != NULL; i++) { // debugging
+      //   printf("%s\n",script_lines[i]);
+      system(script_lines[i]);
+    }
+
+    free(line);
+    fclose(script);
+
+    for (int i = 0; i < line_count; i++) {
+      free(script_lines[i]);
+    }
+    free(script_lines);
+  }
+  return 1;
 }
