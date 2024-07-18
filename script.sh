@@ -1,3 +1,4 @@
+#!bin/psh
 echo hii
 echo hello there
 pfetch
