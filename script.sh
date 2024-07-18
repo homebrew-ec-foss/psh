@@ -1,4 +1,4 @@
 echo hii
 echo hello there
 pfetch
-echo $USER
+echo "hope this lets u sleep properly Adi"
