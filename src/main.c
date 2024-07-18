@@ -1,5 +1,6 @@
 // main.c
 #include "psh.h"
+// #include <cerrno>
 #include <linux/limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,10 +19,11 @@ int main(int argc, char **argv, char **envp) {
   // for (int i=0; envp[i]!=NULL; i++) {  // accessing all env variables
   //       printf("%d: %s\n", i, envp[i]);
   //   }
-
+  else {
   getcwd(cwd, sizeof(cwd)); // home/$USER/psh
   strcpy(PATH,cwd);
   return PSH_READ();
+  }
 }
 
 int PSH_READ(void) {
@@ -169,13 +171,17 @@ int PSH_SCRIPT(const char *file) {
       int run = 1;
       char *inputline = NULL; // NULL is required to avoind conflicts with getline function
 
+      inputline = malloc(1024);
       // strcpy(inputline, script_lines[i])
 
       while (run == 1) {
         
         if (getline(&inputline, &n, script) == -1) {
-          // perror("getline");
-          // printf("ggs\n");
+          
+          if (errno != 0) {
+            perror("getline");
+            printf("ggs\n");
+          }
 
           free(inputline);
           return -1;
