@@ -61,7 +61,6 @@ void save_history(const char *);
 void process_commands(char *, int *);
 void execute_command(char **, int *);
 
-
 // helper functions
 void free_double_pointer(char **array);
 void remove_last_component(char *);
@@ -81,5 +80,7 @@ char **split_commands(char *);
 int size_token_arr(char **);
 bool contains_wildcard(char **);
 int handle_wildcard(char *);
-
+char *find_closing_done(char *);
+void process_nested_loops(char *, int *);
+char *process_for_loop(char *, int *);
 #endif

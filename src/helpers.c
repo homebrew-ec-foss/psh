@@ -1,6 +1,5 @@
 // helpers.c
 #include "psh.h"
-#include <stdio.h>
 
 void free_double_pointer(char **array)
 {
@@ -399,55 +398,172 @@ void sort_strings(char **strings, int num_strings)
     qsort(strings, num_strings, sizeof(char *), compare_strings);
 }
 
-int size_token_arr(char **token_arr) {
+int size_token_arr(char **token_arr)
+{
     int i = 0;
-    while (token_arr[i] != NULL) {
+    while (token_arr[i] != NULL)
+    {
         i++;
     }
     return i;
 }
 
-bool contains_wildcard(char **token_arr) {
+bool contains_wildcard(char **token_arr)
+{
 
-  int size = size_token_arr(token_arr);  
-  for (int i = 0; i < size; i++) {
-      if (strchr(token_arr[i], '?') || 
-          strchr(token_arr[i], '*')) {
-        return true;
-      }
+    int size = size_token_arr(token_arr);
+    for (int i = 0; i < size; i++)
+    {
+        if (strchr(token_arr[i], '?') ||
+            strchr(token_arr[i], '*'))
+        {
+            return true;
+        }
     }
-  return false;
+    return false;
 }
 
-int handle_wildcard(char *pattern) {
+int handle_wildcard(char *pattern)
+{
     char **found;
     glob_t glob_struct;
     int run;
 
-    run = glob(pattern, GLOB_ERR , NULL, &glob_struct);
+    run = glob(pattern, GLOB_ERR, NULL, &glob_struct);
 
-    // check for errors 
-    if(run != 0)
+    // check for errors
+    if (run != 0)
     {
-        if(run == GLOB_NOMATCH)
-            fprintf(stderr,"No matches\n");
+        if (run == GLOB_NOMATCH)
+            fprintf(stderr, "No matches\n");
 
         else
-            fprintf(stderr,"Some kinda glob error\n");
-            // exit(1);
+            fprintf(stderr, "Some kinda glob error\n");
+        // exit(1);
         return 1;
     }
-    
+
     /* success, output found filenames */
     printf("\n");
-    printf("Found %zu filename matches\n",glob_struct.gl_pathc);
+    printf("Found %zu filename matches\n", glob_struct.gl_pathc);
     found = glob_struct.gl_pathv;
-    
-    while(*found)
+
+    while (*found)
     {
-        printf("%s\n",*found);
+        printf("%s\n", *found);
         found++;
     }
     printf("\n");
     return 1;
+}
+
+char *find_closing_done(char *start)
+{
+    int depth = 0;
+    char *pos = start;
+    while (*pos)
+    {
+        if (strncmp(pos, "for ", 4) == 0)
+        {
+            depth++;
+        }
+        else if (strncmp(pos, "done", 4) == 0)
+        {
+            if (depth == 0)
+            {
+                return pos;
+            }
+            depth--;
+        }
+        pos++;
+    }
+    return NULL;
+}
+
+void process_nested_loops(char *command, int *run)
+{
+    char *current_command = command;
+    while ((current_command = strstr(current_command, "for ")) != NULL)
+    {
+        current_command = process_for_loop(current_command, run);
+        if (!current_command || *run == 0)
+        {
+            return;
+        }
+    }
+}
+
+char *process_for_loop(char *loop_command, int *run)
+{
+    char *saveptr;
+    char *start = strstr(loop_command, "for ");
+    if (!start)
+    {
+        fprintf(stderr, "Error: Missing 'for' keyword\n");
+        return NULL;
+    }
+
+    start += 4;
+    char *var_name = strtok(start, " ");
+    if (!var_name)
+    {
+        fprintf(stderr, "Error: Missing variable name\n");
+        return NULL;
+    }
+
+    char *in = strtok(NULL, " ");
+    if (!in || strcmp(in, "in") != 0)
+    {
+        fprintf(stderr, "Error: Missing 'in' keyword\n");
+        return NULL;
+    }
+
+    char *values = strtok(NULL, ";");
+    if (!values)
+    {
+        fprintf(stderr, "Error: Missing values after 'in'\n");
+        return NULL;
+    }
+
+    char *do_keyword = strtok(NULL, " ");
+    if (!do_keyword || strcmp(do_keyword, "do") != 0)
+    {
+        fprintf(stderr, "Error: Missing 'do' keyword\n");
+        return NULL;
+    }
+
+    char *commands_start = do_keyword + 3;
+    char *commands_end = find_closing_done(commands_start);
+    if (!commands_end)
+    {
+        fprintf(stderr, "Error: Missing 'done' keyword\n");
+        return NULL;
+    }
+
+    size_t commands_length = commands_end - commands_start;
+    char *commands = malloc(commands_length + 1);
+    if (!commands)
+    {
+        fprintf(stderr, "Error: Allocation error for commands\n");
+        return NULL;
+    }
+
+    strncpy(commands, commands_start, commands_length);
+    commands[commands_length] = '\0';
+
+    char *value = strtok_r(values, " ", &saveptr);
+    while (value)
+    {
+        char command_block[PATH_MAX];
+        snprintf(command_block, PATH_MAX, "%s=%s; %s", var_name, value, commands);
+        value = strtok_r(NULL, " ", &saveptr);
+        process_commands(command_block, run);
+        if (*run == 0)
+        {
+            free(commands);
+            return commands_end + 4; // Return the position after "done"
+        }
+    }
+    free(commands);
+    return commands_end + 4; // Return the position after "done"
 }

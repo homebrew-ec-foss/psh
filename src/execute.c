@@ -3,7 +3,7 @@
 
 // Helper function to split the input line by ';'
 
-char **split_commands(char *input)
+/*char **split_commands(char *input)
 {
     size_t bufsize = 64, position = 0;
     char **commands = malloc(bufsize * sizeof(char *));
@@ -40,6 +40,72 @@ char **split_commands(char *input)
 
         command = strtok(NULL, ";");
     }
+    commands[position] = NULL;
+    return commands;
+}*/
+
+char **split_commands(char *input)
+{
+    size_t bufsize = 64, position = 0;
+    char **commands = malloc(bufsize * sizeof(char *));
+    char *command_start = input;
+    int in_for_loop = 0;
+
+    if (!commands)
+    {
+        fprintf(stderr, "psh: allocation error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for (char *c = input; *c != '\0'; c++)
+    {
+        if (!in_for_loop && *c == ';')
+        {
+            commands[position] = malloc((c - command_start + 1) * sizeof(char));
+            if (!commands[position])
+            {
+                fprintf(stderr, "psh: allocation error\n");
+                exit(EXIT_FAILURE);
+            }
+            strncpy(commands[position], command_start, c - command_start);
+            commands[position][c - command_start] = '\0';
+            position++;
+
+            if (position >= bufsize)
+            {
+                bufsize += 64;
+                commands = realloc(commands, bufsize * sizeof(char *));
+                if (!commands)
+                {
+                    fprintf(stderr, "psh: allocation error\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            command_start = c + 1;
+        }
+        else if (strncmp(c, "for ", 4) == 0)
+        {
+            in_for_loop++;
+        }
+        else if (in_for_loop && strncmp(c, "done", 4) == 0)
+        {
+            in_for_loop--;
+            c += 3; // Move past "done"
+        }
+    }
+
+    if (command_start != input + strlen(input))
+    {
+        commands[position] = strdup(command_start);
+        if (!commands[position])
+        {
+            fprintf(stderr, "psh: allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        position++;
+    }
+
     commands[position] = NULL;
     return commands;
 }
@@ -164,17 +230,22 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
     return 1;
 }
 
-void handle_input(char **inputline, size_t *n) {
+void handle_input(char **inputline, size_t *n)
+{
     char last_component[PATH_MAX];
     get_last_path_component(PATH, last_component);
 
-    if (strcmp(PATH, "/") == 0) {
+    if (strcmp(PATH, "/") == 0)
+    {
         printf("%s@PSH → %s $ ", getenv("USER"), "/");
-    } else {
+    }
+    else
+    {
         printf("%s@PSH → %s $ ", getenv("USER"), last_component);
     }
 
-    if (getline(inputline, n, stdin) == -1) {
+    if (getline(inputline, n, stdin) == -1)
+    {
         perror("getline");
         free(*inputline);
         exit(EXIT_FAILURE);
@@ -183,12 +254,14 @@ void handle_input(char **inputline, size_t *n) {
     (*inputline)[strcspn(*inputline, "\n")] = '\0';
 
     char *comment_pos = strchr(*inputline, '#');
-    if (comment_pos) {
+    if (comment_pos)
+    {
         *comment_pos = '\0';
     }
 }
 
-void save_history(const char *inputline) {
+void save_history(const char *inputline)
+{
     FILE *fp1, *fp2;
 
     char path_memory[PATH_MAX];
@@ -201,12 +274,17 @@ void save_history(const char *inputline) {
     strcat(path_session, "/.files/SESSION_HISTORY_FILE");
     fp2 = fopen(path_session, "a");
 
-    if (fp1 == NULL || fp2 == NULL) {
+    if (fp1 == NULL || fp2 == NULL)
+    {
         perror("Error:");
-        if (fp1) fclose(fp1);
-        if (fp2) fclose(fp2);
+        if (fp1)
+            fclose(fp1);
+        if (fp2)
+            fclose(fp2);
         exit(EXIT_FAILURE);
-    } else {
+    }
+    else
+    {
         fprintf(fp1, "%s\n", inputline);
         fprintf(fp2, "%s\n", inputline);
         fclose(fp1);
@@ -214,13 +292,15 @@ void save_history(const char *inputline) {
     }
 }
 
-void process_commands(char *inputline, int *run) {
+void process_commands(char *inputline, int *run){
     char **commands = split_commands(inputline);
 
-    for (int i = 0; commands[i] != NULL; i++) {
+    for (int i = 0; commands[i] != NULL; i++)
+    {
         char **token_arr = PSH_TOKENIZER(commands[i]);
 
-        if (token_arr[0] != NULL) {
+        if (token_arr[0] != NULL)
+        {
             execute_command(token_arr, run);
         }
 
@@ -230,12 +310,15 @@ void process_commands(char *inputline, int *run) {
     free_double_pointer(commands);
 }
 
-void execute_command(char **token_arr, int *run) {
-    if (strchr(token_arr[0], '=')) {
+void execute_command(char **token_arr, int *run)
+{
+    if (strchr(token_arr[0], '='))
+    {
         char *var_name = strtok(token_arr[0], "=");
         char *var_value = strtok(NULL, "=");
 
-        if (var_value != NULL) {
+        if (var_value != NULL)
+        {
             // if (num_vars < MAX_VARS) {
             //     strcpy(global_vars[num_vars].var_name, var_name);
             //     strcpy(global_vars[num_vars].var_value, var_value);
@@ -243,36 +326,36 @@ void execute_command(char **token_arr, int *run) {
             // } else {
             //     fprintf(stderr, "PSH: Invalid variable assignment\n");
             // }
-            setenv(var_name,var_value,1);
+            setenv(var_name, var_value, 1);
             return;
         }
     }
 
-    for (int j = 0; j < size_builtin_str; j++) {
-        if (strcmp(token_arr[0], builtin_str[j]) == 0) {
-
+    for (int j = 0; j < size_builtin_str; j++)
+    {
+        if (strcmp(token_arr[0], builtin_str[j]) == 0)
+        {
 
             *run = (*builtin_func[j])(token_arr);
             return;
         }
     }
-    
-    if(!contains_wildcard(token_arr)) {
-    *run = PSH_EXEC_EXTERNAL(token_arr);
+
+    if (!contains_wildcard(token_arr))
+    {
+        *run = PSH_EXEC_EXTERNAL(token_arr);
     }
 
-    else {
-        if (strchr(token_arr[0], '?') || strchr(token_arr[0], '?')) 
+    else
+    {
+        if (strchr(token_arr[0], '?') || strchr(token_arr[0], '?'))
         {
             fprintf(stdout, "psh: No command found: %s\n", token_arr[0]);
         }
-        else 
+        else
         {
-            //func to handle wildcards
+            // func to handle wildcards
             handle_wildcard(token_arr[1]);
         }
-
     }
-
-    
 }

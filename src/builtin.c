@@ -1,9 +1,4 @@
 #include "psh.h"
-#include <linux/limits.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
 
 // variables
 
@@ -14,6 +9,7 @@ int size_builtin_str = sizeof(builtin_str) / sizeof(builtin_str[0]);
 struct Variable global_vars[MAX_VARS];
 int num_vars = 0;
 char PATH[PATH_MAX];
+
 int PSH_EXIT(char **token_arr)
 {
     char PATH_DEL[PATH_MAX];
@@ -1046,8 +1042,27 @@ int PSH_EXPORT(char **token_arr)
     return 1;
 }
 
+// Define the PSH_FOR function
 int PSH_FOR(char **token_arr)
 {
-    
-    return 1;
+    size_t bufsize = 1024;
+    char *loop_command = malloc(bufsize * sizeof(char));
+    loop_command[0] = '\0';
+
+    for (int i = 0; token_arr[i] != NULL; i++)
+    {
+        if (strlen(loop_command) + strlen(token_arr[i]) + 1 >= bufsize)
+        {
+            bufsize *= 2;
+            loop_command = realloc(loop_command, bufsize * sizeof(char));
+        }
+        strcat(loop_command, token_arr[i]);
+        strcat(loop_command, " ");
+    }
+
+    int run = 1;                              // Initialize run for the loop
+    process_nested_loops(loop_command, &run); // Pass run to process_nested_loops
+
+    free(loop_command);
+    return run;
 }
