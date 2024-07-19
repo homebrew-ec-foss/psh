@@ -8,8 +8,8 @@
 // variables
 
 char cwd[PATH_MAX];
-char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export"};
-int (*builtin_func[])(char **) = {&PSH_EXIT, &PSH_CD, &PSH_ECHO, &PSH_PWD, &PSH_FC, &PSH_EXPORT};
+char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for"};
+int (*builtin_func[])(char **) = {&PSH_EXIT, &PSH_CD, &PSH_ECHO, &PSH_PWD, &PSH_FC, &PSH_EXPORT, &PSH_FOR};
 int size_builtin_str = sizeof(builtin_str) / sizeof(builtin_str[0]);
 struct Variable global_vars[MAX_VARS];
 int num_vars = 0;
@@ -1043,5 +1043,11 @@ int PSH_EXPORT(char **token_arr)
         }
     }
 
+    return 1;
+}
+
+int PSH_FOR(char **token_arr)
+{
+    
     return 1;
 }

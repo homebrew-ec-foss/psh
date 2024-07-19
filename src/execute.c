@@ -235,13 +235,14 @@ void execute_command(char **token_arr, int *run) {
         char *var_value = strtok(NULL, "=");
 
         if (var_value != NULL) {
-            if (num_vars < MAX_VARS) {
-                strcpy(global_vars[num_vars].var_name, var_name);
-                strcpy(global_vars[num_vars].var_value, var_value);
-                num_vars++;
-            } else {
-                fprintf(stderr, "PSH: Invalid variable assignment\n");
-            }
+            // if (num_vars < MAX_VARS) {
+            //     strcpy(global_vars[num_vars].var_name, var_name);
+            //     strcpy(global_vars[num_vars].var_value, var_value);
+            //     num_vars++;
+            // } else {
+            //     fprintf(stderr, "PSH: Invalid variable assignment\n");
+            // }
+            setenv(var_name,var_value,1);
             return;
         }
     }

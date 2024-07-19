@@ -9,5 +9,6 @@ int PSH_ECHO(char **);
 int PSH_PWD(char **);
 int PSH_FC(char **);
 int PSH_EXPORT(char **);
+int PSH_FOR(char **);
 
 #endif
