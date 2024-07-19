@@ -1,4 +1,5 @@
 #include "psh.h"
+#include <stdio.h>
 
 // Helper function to split the input line by ';'
 
@@ -249,10 +250,29 @@ void execute_command(char **token_arr, int *run) {
 
     for (int j = 0; j < size_builtin_str; j++) {
         if (strcmp(token_arr[0], builtin_str[j]) == 0) {
+
+
             *run = (*builtin_func[j])(token_arr);
             return;
         }
     }
-
+    
+    if(!contains_wildcard(token_arr)) {
     *run = PSH_EXEC_EXTERNAL(token_arr);
+    }
+
+    else {
+        if (strchr(token_arr[0], '?') || strchr(token_arr[0], '?')) 
+        {
+            fprintf(stdout, "psh: No command found: %s\n", token_arr[0]);
+        }
+        else 
+        {
+            //func to handle wildcards
+            handle_wildcard(token_arr[1]);
+        }
+
+    }
+
+    
 }

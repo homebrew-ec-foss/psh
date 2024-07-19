@@ -13,6 +13,8 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <linux/limits.h>
+#include <glob.h>
+#include <stdbool.h>
 
 #define MAX_HISTORY 1024
 #define MAX_LINE_LENGTH 1024
@@ -76,4 +78,8 @@ char *expand_history(const char *, FILE *);
 int compare_strings(const void *, const void *);
 void sort_strings(char **, int);
 char **split_commands(char *);
+int size_token_arr(char **);
+bool contains_wildcard(char **);
+int handle_wildcard(char *);
+
 #endif

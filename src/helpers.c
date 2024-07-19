@@ -1,5 +1,6 @@
 // helpers.c
 #include "psh.h"
+#include <stdio.h>
 
 void free_double_pointer(char **array)
 {
@@ -396,4 +397,57 @@ int compare_strings(const void *a, const void *b)
 void sort_strings(char **strings, int num_strings)
 {
     qsort(strings, num_strings, sizeof(char *), compare_strings);
+}
+
+int size_token_arr(char **token_arr) {
+    int i = 0;
+    while (token_arr[i] != NULL) {
+        i++;
+    }
+    return i;
+}
+
+bool contains_wildcard(char **token_arr) {
+
+  int size = size_token_arr(token_arr);  
+  for (int i = 0; i < size; i++) {
+      if (strchr(token_arr[i], '?') || 
+          strchr(token_arr[i], '*')) {
+        return true;
+      }
+    }
+  return false;
+}
+
+int handle_wildcard(char *pattern) {
+    char **found;
+    glob_t glob_struct;
+    int run;
+
+    run = glob(pattern, GLOB_ERR , NULL, &glob_struct);
+
+    // check for errors 
+    if(run != 0)
+    {
+        if(run == GLOB_NOMATCH)
+            fprintf(stderr,"No matches\n");
+
+        else
+            fprintf(stderr,"Some kinda glob error\n");
+            // exit(1);
+        return 1;
+    }
+    
+    /* success, output found filenames */
+    printf("\n");
+    printf("Found %zu filename matches\n",glob_struct.gl_pathc);
+    found = glob_struct.gl_pathv;
+    
+    while(*found)
+    {
+        printf("%s\n",*found);
+        found++;
+    }
+    printf("\n");
+    return 1;
 }
