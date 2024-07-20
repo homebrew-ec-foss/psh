@@ -567,3 +567,5 @@ char *process_for_loop(char *loop_command, int *run)
     free(commands);
     return commands_end + 4; // Return the position after "done"
 }
+
+

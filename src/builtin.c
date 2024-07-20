@@ -1071,28 +1071,83 @@ int PSH_FOR(char **token_arr)
     return run;
 }
 
-int PSH_TYPE(char **token_arr) // type ls 
+int PSH_TYPE(char **token_arr) // usage type <command> 
 {
-    // char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for", "type"};
-    int i = 0;
-    bool is_builtin = false;
+    /* METHOD 1 */ 
+
+    // char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for", "type"}; // for reference
+    // int i = 0;
+    // bool is_builtin = false;
 
 
-    while (i < size_builtin_str) {
-        if(strcmp(token_arr[1], builtin_str[i]) == 0) {
-            // printf("inf\n");
-            is_builtin = true;
-            break;
-        }
-        i++;
-    }
+    // while (i < size_builtin_str) {
+    //     if(strcmp(token_arr[1], builtin_str[i]) == 0) {
+    //         // printf("inf\n");
+    //         is_builtin = true;
+    //         break;
+    //     }
+    //     i++;
+    // }
     
-    if (is_builtin) {
-        printf("isbuiltin\n");
+    // if (is_builtin) {
+    //     printf("isbuiltin\n");
+    //     return 1;
+    // }
+    // else {
+    //     printf("external command\n");
+    //     return 1;
+    // }
+
+    if (token_arr[1] == NULL) {
+        printf("Usage: type <command>\n");
         return 1;
     }
-    else {
-        printf("external command\n");
-        return 1;
+
+    /* BETTER METHOD */
+
+    // handling pwd, echo as in PSH they are built-ins
+    if ((strcmp(token_arr[1], "pwd") == 0) || (strcmp(token_arr[1], "echo") == 0)) {   
+      printf("%s is a PSH shell builtn\n", token_arr[1]);
+      return 1;
     }
+
+    char buff1[1024 * 4];
+    char buff2[1024 * 4];
+    struct stat stats;
+    int perms = 0; // default is shell builtin
+
+
+    snprintf(buff1, sizeof(buff1), "/usr/bin/%s", token_arr[1]);
+    snprintf(buff2, sizeof(buff2), "/bin/%s", token_arr[1]);
+
+    char *common_buff = malloc(1024 * 4);
+    // printf("Checking: %s\n", buff1); //debug check
+
+    if (stat(buff1, &stats) == 0) 
+    {
+      // printf("Found in /usr/bin\n");
+      perms = (stats.st_mode & S_IXUSR); // perms = 0 if command is a shell built-in
+      // printf("%d\n",perms);
+      strcpy(common_buff, buff1);
+    } 
+    else if (stat(buff2, &stats) == 0) 
+    {
+      // printf("Found in /bin\n");
+      perms = (stats.st_mode & S_IXUSR);
+      // printf("%d\n",perms);
+      strcpy(common_buff, buff2);
+    }
+
+    // printf("%d this is perms\n",perms);
+    if (perms == 0) 
+    {
+      printf("%s is a PSH shell builtn\n", token_arr[1]);
+      free(common_buff);
+    } 
+    else 
+    {
+      printf("%s is shell external in %s\n", token_arr[1], common_buff);
+      free(common_buff);
+    }
+    return 1;
 }
