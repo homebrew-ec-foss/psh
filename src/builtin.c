@@ -1,10 +1,14 @@
 #include "psh.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 
 // variables
 
 char cwd[PATH_MAX];
-char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for"};
-int (*builtin_func[])(char **) = {&PSH_EXIT, &PSH_CD, &PSH_ECHO, &PSH_PWD, &PSH_FC, &PSH_EXPORT, &PSH_FOR};
+char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for", "type"};
+int (*builtin_func[])(char **) = {&PSH_EXIT, &PSH_CD, &PSH_ECHO, &PSH_PWD, &PSH_FC, &PSH_EXPORT, &PSH_FOR, &PSH_TYPE};
 int size_builtin_str = sizeof(builtin_str) / sizeof(builtin_str[0]);
 struct Variable global_vars[MAX_VARS];
 int num_vars = 0;
@@ -1065,4 +1069,30 @@ int PSH_FOR(char **token_arr)
 
     free(loop_command);
     return run;
+}
+
+int PSH_TYPE(char **token_arr) // type ls 
+{
+    // char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for", "type"};
+    int i = 0;
+    bool is_builtin = false;
+
+
+    while (i < size_builtin_str) {
+        if(strcmp(token_arr[1], builtin_str[i]) == 0) {
+            // printf("inf\n");
+            is_builtin = true;
+            break;
+        }
+        i++;
+    }
+    
+    if (is_builtin) {
+        printf("isbuiltin\n");
+        return 1;
+    }
+    else {
+        printf("external command\n");
+        return 1;
+    }
 }

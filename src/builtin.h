@@ -10,5 +10,6 @@ int PSH_PWD(char **);
 int PSH_FC(char **);
 int PSH_EXPORT(char **);
 int PSH_FOR(char **);
+int PSH_TYPE(char **);
 
 #endif
