@@ -1,4 +1,5 @@
 #include "psh.h"
+char path_memory[PATH_MAX]="";
 
 // Helper function to split the input line by ';'
 
@@ -254,12 +255,12 @@ void handle_input(char **inputline, size_t *n)
         if (arrow == 'A') {
         // Up arrow detected
         //   printf("Up Arrow\n");  
-        //   printf("\033[2K\r");
+          printf("\033[2K\r");
 
         // now we need to get the previous command executed from HISTORY_FILE
         // printf("code is coming here\n");
           get_last_line();
-        //   printf("\033[2K\r");
+          printf("\033[2K\r");
         // continue;  // Skip the rest of the loop and prompt again
         }
       }
@@ -287,10 +288,8 @@ void handle_input(char **inputline, size_t *n)
 void save_history(const char *inputline)
 {
     FILE *fp1, *fp2;
-
-    char path_memory[PATH_MAX];
-    strcpy(path_memory, cwd);
-    strcat(path_memory, "/.files/MEMORY_HISTORY_FILE");
+    
+   
     fp1 = fopen(path_memory, "a");
 
     char path_session[PATH_MAX];

@@ -1,7 +1,7 @@
 // helpers.c
 #include "psh.h"
 #include <stdio.h>
-static char path_memory[PATH_MAX];
+// char path_memory[PATH_MAX];
 
 void free_double_pointer(char **array)
 {
@@ -574,12 +574,17 @@ void get_last_line() {
   printf("entering getlastline\n");
   FILE *fp1 = fopen(path_memory, "r");
 
+  if(fp1 == NULL) {
+    perror("Error opening file");
+    return;
+  }
+
   char line[MAX_LINE_LENGTH] ="";
   char lastLine[MAX_LINE_LENGTH] = "";
   char secondLastLine[MAX_LINE_LENGTH] = "";
   // char thirdLastLine[MAX_LINE_LENGTH] = "";
 
-  printf("%s\n",path_memory);
+  printf("path is %s\n",path_memory);
 
   // Read each line and store the last one in lastLine
   while (fgets(line, sizeof(line), fp1)) {
@@ -590,10 +595,10 @@ void get_last_line() {
 
   printf("testt\n");
   // Close the file
+  system(lastLine);
   fclose(fp1);
 
-  // Print the last line
-  printf("Last command: %s\n", lastLine);
-  // system(lastLine);
-  // fflush(stdin);
+    // Print the last line
+    //   printf("Last command: %s\n", lastLine);
+    // fflush(stdin);
 }

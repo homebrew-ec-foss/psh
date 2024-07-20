@@ -23,6 +23,8 @@ int PSH_LOOP(void)
     size_t n = 0;
     int run = 1;
     char *inputline = NULL;
+    strcpy(path_memory, cwd);
+    strcat(path_memory, "/.files/MEMORY_HISTORY_FILE");
 
     while (run == 1)
     {
