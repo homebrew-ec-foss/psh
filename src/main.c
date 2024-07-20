@@ -1,5 +1,6 @@
 // main.c
 #include "psh.h"
+#include <stdio.h>
 
 // Unused Parameters
 int main(int argc, char **argv, char **envp)
@@ -34,7 +35,14 @@ int PSH_LOOP(void)
             continue;
         }
         save_history(inputline);
-        process_commands(inputline, &run);
+        if (last_command_up == 0) {
+            process_commands(inputline, &run);
+        }
+        else {
+            last_command_up = 0;
+        }
+        // continue;
+        
     }
     free(inputline);
     return run;

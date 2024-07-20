@@ -1,5 +1,6 @@
 #include "psh.h"
 char path_memory[PATH_MAX]="";
+int last_command_up = 0;
 
 // Helper function to split the input line by ';'
 
@@ -259,7 +260,7 @@ void handle_input(char **inputline, size_t *n)
 
         // now we need to get the previous command executed from HISTORY_FILE
         // printf("code is coming here\n");
-          get_last_line();
+          get_last_line(inputline);
           printf("\033[2K\r");
         // continue;  // Skip the rest of the loop and prompt again
         }

@@ -45,7 +45,8 @@ extern char PATH[PATH_MAX];
 extern char path_memory[PATH_MAX];
 
 extern struct Variable global_vars[MAX_VARS]; // Global array to store variables
-extern int num_vars;                          // Number of variables currently stored
+extern int num_vars; 
+extern int last_command_up;              // Number of variables currently stored
 // struct Func global_funcs[MAX_FUNCS];
 // int num_funcs = 0;
 
@@ -86,6 +87,6 @@ int handle_wildcard(char *);
 char *find_closing_done(char *);
 void process_nested_loops(char *, int *);
 char *process_for_loop(char *, int *);
-void get_last_line();
+void get_last_line(char **);
 
 #endif
