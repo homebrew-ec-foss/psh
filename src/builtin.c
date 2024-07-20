@@ -319,7 +319,7 @@ int PSH_PWD(char **token_arr)
         strcmp(token_arr[1], "-L") == 0) // Default pwd and pwd -L
     {
         // Write better check, statement always evaluates to true.
-        if (PATH)
+        if (true) // if PATH exists
         {
             printf("%s\n", PATH);
         }

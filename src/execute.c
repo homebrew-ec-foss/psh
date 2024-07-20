@@ -1,5 +1,4 @@
 #include "psh.h"
-#include <stdio.h>
 
 // Helper function to split the input line by ';'
 
@@ -244,6 +243,31 @@ void handle_input(char **inputline, size_t *n)
         printf("%s@PSH → %s $ ", getenv("USER"), last_component);
     }
 
+
+    // handling UP arrow 
+    char c;
+    // FILE *fd = fopen("/.files/MEMORY_HISTORY_FILE", "r");
+     if ((c = getchar()) == '\033') {
+      char next = getchar();
+      if (next == '[') {
+        char arrow = getchar();
+        if (arrow == 'A') {
+        // Up arrow detected
+        //   printf("Up Arrow\n");  
+        //   printf("\033[2K\r");
+
+        // now we need to get the previous command executed from HISTORY_FILE
+        // printf("code is coming here\n");
+          get_last_line();
+        //   printf("\033[2K\r");
+        // continue;  // Skip the rest of the loop and prompt again
+        }
+      }
+      ungetc(c, stdin);  // Put back the character if it's not an arrow sequence
+    } else {
+      ungetc(c, stdin);  // Put back the character for getline to read
+    }
+
     if (getline(inputline, n, stdin) == -1)
     {
         perror("getline");
@@ -359,3 +383,4 @@ void execute_command(char **token_arr, int *run)
         }
     }
 }
+

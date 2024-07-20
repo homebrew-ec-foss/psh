@@ -1,5 +1,7 @@
 // helpers.c
 #include "psh.h"
+#include <stdio.h>
+static char path_memory[PATH_MAX];
 
 void free_double_pointer(char **array)
 {
@@ -234,7 +236,6 @@ void clear_session_history()
     char MEMORY_HISTORY_FILE[PATH_MAX];
     char SESSION_HISTORY_FILE[PATH_MAX];
 
-    char path_memory[PATH_MAX];
     strcpy(path_memory, cwd);
     strcat(path_memory, "/.files/MEMORY_HISTORY_FILE");
     strcpy(MEMORY_HISTORY_FILE, path_memory);
@@ -568,4 +569,31 @@ char *process_for_loop(char *loop_command, int *run)
     return commands_end + 4; // Return the position after "done"
 }
 
+void get_last_line() {
+  
+  printf("entering getlastline\n");
+  FILE *fp1 = fopen(path_memory, "r");
 
+  char line[MAX_LINE_LENGTH] ="";
+  char lastLine[MAX_LINE_LENGTH] = "";
+  char secondLastLine[MAX_LINE_LENGTH] = "";
+  // char thirdLastLine[MAX_LINE_LENGTH] = "";
+
+  printf("%s\n",path_memory);
+
+  // Read each line and store the last one in lastLine
+  while (fgets(line, sizeof(line), fp1)) {
+      // strcpy(thirdLastLine,secondLastLine);
+      strcpy(secondLastLine, lastLine);
+      strcpy(lastLine, line);
+  }
+
+  printf("testt\n");
+  // Close the file
+  fclose(fp1);
+
+  // Print the last line
+  printf("Last command: %s\n", lastLine);
+  // system(lastLine);
+  // fflush(stdin);
+}
