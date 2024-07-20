@@ -12,8 +12,10 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <linux/limits.h>
 #include <glob.h>
+#include <time.h>
 #include <stdbool.h>
 
 #define MAX_HISTORY 1024
@@ -83,4 +85,5 @@ int handle_wildcard(char *);
 char *find_closing_done(char *);
 void process_nested_loops(char *, int *);
 char *process_for_loop(char *, int *);
+
 #endif
