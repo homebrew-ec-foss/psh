@@ -45,7 +45,7 @@ run: all
 
 # Run Valgrind on the executable
 valgrind: all
-	valgrind --tool=memcheck --leak-check=yes --leak-check=full ./$(EXECUTABLE)
+	valgrind --tool=memcheck --leak-check=yes --leak-check=full -s ./$(EXECUTABLE)
 
 # Debug with GDB
 debug: all

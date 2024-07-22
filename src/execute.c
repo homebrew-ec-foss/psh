@@ -118,7 +118,7 @@ char **PSH_TOKENIZER(char *line)
     char *token;
     int qstring = 0, has_quote = 0;
     const char *delimiters = " \t\n";
-    char quote;
+    char quote = '\0';
 
     if (!token_arr)
     {
