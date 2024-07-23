@@ -336,6 +336,17 @@ void process_commands(char *inputline, int *run){
 
 void execute_command(char **token_arr, int *run)
 {
+    HashMap *map = create_map(HASHMAP_SIZE);
+    char ALIAS[PATH_MAX];
+    char path_memory[PATH_MAX];
+    if (!getcwd(path_memory, sizeof(path_memory)))
+    {
+        perror("Failed to get current Wworking directory\n");
+        return ;
+    }
+    snprintf(ALIAS, sizeof(ALIAS), "%s/.files/ALIAS", path_memory);
+    load_aliases(map, ALIAS);
+    
     if (strchr(token_arr[0], '='))
     {
         char *var_name = strtok(token_arr[0], "=");
@@ -354,7 +365,11 @@ void execute_command(char **token_arr, int *run)
             return;
         }
     }
-
+    if (find(map, token_arr[0]))
+    {
+        replace_alias(map, token_arr);
+    }
+    free_map(map);
     for (int j = 0; j < size_builtin_str; j++)
     {
         if (strcmp(token_arr[0], builtin_str[j]) == 0)

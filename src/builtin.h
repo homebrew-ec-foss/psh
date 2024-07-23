@@ -12,5 +12,6 @@ int PSH_EXPORT(char **);
 int PSH_FOR(char **);
 int PSH_TYPE(char **);
 int PSH_READ_SHELL(char **);
+int PSH_ALIAS(char **);
 
 #endif

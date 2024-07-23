@@ -609,3 +609,199 @@ void get_last_line(char **inputline) {
   // printf("Last command: %s\n", lastLine);
   // fflush(stdin);
 }
+
+unsigned int hash(const char *str, int size)
+{
+  unsigned int hash = 0;
+  int i = 0;
+  while (str[i])
+  {
+    hash = (hash << 5) + str[i++];
+  }
+  return hash % size;
+}
+
+HashMap *create_map(int size)
+{
+    HashMap *map = (HashMap *)malloc(sizeof(HashMap));
+    if (!map)
+    {
+        perror("Failed to allocate memory for HashMap");
+        exit(EXIT_FAILURE);
+    }
+    map->size = size;
+    map->buckets = (Alias **)malloc(size * sizeof(Alias *));
+    if (!map->buckets)
+    {
+        perror("Failed to allocate memory for HashMap buckets");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < size; i++)
+    {
+        map->buckets[i] = NULL;
+    }
+    return map;
+}
+
+void delete_all_aliases(HashMap *map) 
+{
+    for (int i = 0; i < map->size; i++)
+    {
+        Alias *current = map->buckets[i];
+        while (current)
+        {
+            Alias *delete = current;
+            current = current->next;
+            free(delete->name);
+            free(delete->command);
+            free(delete);
+        }
+        map->buckets[i] = NULL;
+    }
+}
+
+void insert_alias(HashMap *map, const char *name, const char *command)
+{
+  // printf("Inside insert function\n"); //debugging
+  unsigned int bucket_index = hash(name, map->size);
+  Alias *new_alias = (Alias *)malloc(sizeof(Alias));
+  if (!new_alias)
+  {
+    perror("Failed to allocate memory for new alias");
+    return;
+  }
+  new_alias->name = strdup(name);
+  new_alias->command = strdup(command);
+  new_alias->next = map->buckets[bucket_index];
+  map->buckets[bucket_index] = new_alias;
+}
+
+const char *get_alias_command(HashMap *map, const char *name)
+{
+    unsigned int bucket_index = hash(name, map->size);
+    Alias *current = map->buckets[bucket_index];
+    while (current)
+    {
+        if (strcmp(current->name, name) == 0)
+        {
+            return current->command;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
+void load_aliases(HashMap *map, const char *filepath)
+{
+    FILE *fp = fopen(filepath, "r");
+    if (!fp)
+    {
+        perror("PSH: Failed to open file");
+        return;
+    }
+    char line[256];
+    while (fgets(line, sizeof(line), fp))
+    {
+        if (strchr(line, '='))
+        {
+            char *name = strtok(line, "=");
+            char *command = strtok(NULL, "=");
+            if (command && strchr(command, '\n'))
+            {
+                *strchr(command, '\n') = '\0';
+            }
+            insert_alias(map, name, command);
+        }
+    }
+    fclose(fp);
+}
+
+void save_aliases(HashMap *map, const char *filepath)
+{
+    FILE *fp = fopen(filepath, "w");
+    if (!fp)
+    {
+        perror("PSH: Failed to open file");
+        return;
+    }
+    for (int i = 0; i < map->size; i++)
+    {
+        Alias *current = map->buckets[i];
+        while (current)
+        {
+            fprintf(fp, "%s=%s\n", current->name, current->command);
+            current = current->next;
+        }
+    }
+    fclose(fp);
+}
+
+void free_map(HashMap *map)
+{
+    for (int i = 0; i < map->size; i++)
+    {
+        Alias *current = map->buckets[i];
+        while (current)
+        {
+            Alias *delete = current;
+            current = current->next;
+            free(delete->name);
+            free(delete->command);
+            free(delete);
+        }
+    }
+    free(map->buckets);
+    free(map);
+}
+
+Alias *find(HashMap *map, const char *name)
+{
+    unsigned int index = hash(name, map->size);
+    Alias *entry = map->buckets[index];
+
+    while (entry != NULL)
+    {
+        if (strcmp(entry->name, name) == 0)
+        {
+            return entry;
+        }
+        entry = entry->next;
+    }
+    return NULL; // Name not found
+}
+
+void delete_alias(HashMap *map, const char *name)
+{
+    unsigned int index = hash(name, map->size);
+    Alias *entry = map->buckets[index];
+    Alias *prev = NULL;
+
+    while (entry != NULL)
+    {
+        if (strcmp(entry->name, name) == 0) {
+            if (prev == NULL) 
+            {
+                map->buckets[index] = entry->next;
+            }
+            else
+            {
+                prev->next = entry->next;
+            }
+            free(entry->name);
+            free(entry->command);
+            free(entry);
+            return;
+        }
+        prev = entry;
+        entry = entry->next;
+    }
+}
+
+void replace_alias(HashMap *map, char **token_arr)
+{
+    const char *command = get_alias_command(map, token_arr[0]);
+    if (command) 
+    {
+        token_arr[0] = strdup(command);
+    }
+}

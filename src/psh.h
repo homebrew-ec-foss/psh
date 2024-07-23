@@ -21,6 +21,7 @@
 #define MAX_HISTORY 1024
 #define MAX_LINE_LENGTH 1024
 #define MAX_VARS 100
+#define HASHMAP_SIZE 256
 // #define MAX_FUNCS 100
 
 // Defining Structs to hold variables and functions
@@ -34,6 +35,20 @@ struct Variable
 //     char func_name[64];
 //     char func_def[1024];
 // };
+
+typedef struct Alias 
+{
+    char *name;
+    char *command;
+    struct Alias *next; 
+} Alias;
+
+typedef struct HashMap
+{
+    Alias **buckets;
+    int size;
+} HashMap;
+
 
 // Global Variables
 extern char cwd[PATH_MAX];
@@ -88,5 +103,16 @@ char *find_closing_done(char *);
 void process_nested_loops(char *, int *);
 char *process_for_loop(char *, int *);
 void get_last_line(char **);
+unsigned int hash(const char *, int );
+HashMap *create_map(int);
+void delete_all_aliases(HashMap *);
+void insert_alias(HashMap *, const char *, const char *);
+void load_aliases(HashMap *, const char *);
+void save_aliases(HashMap *, const char *);
+void free_map(HashMap *);
+void delete_alias(HashMap *, const char *);
+Alias *find(HashMap *, const char *);
+const char *get_alias_command(HashMap *, const char *);
+void replace_alias(HashMap *, char **);
 
 #endif
