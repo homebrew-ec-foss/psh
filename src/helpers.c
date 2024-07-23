@@ -570,42 +570,141 @@ char *process_for_loop(char *loop_command, int *run)
     return commands_end + 4; // Return the position after "done"
 }
 
+// void get_last_line(char **inputline) {
+
+//   last_command_up = 1;
+//   FILE *fp1 = fopen(path_memory, "r");
+
+//   if (fp1 == NULL) {
+//     perror("Error opening file");
+//     return;
+//   }
+
+//   char line[MAX_LINE_LENGTH] = "";
+//   char lastLine[MAX_LINE_LENGTH] = "";
+//   char secondLastLine[MAX_LINE_LENGTH] = "";
+
+//   // Read each line and store the last one in lastLine
+//   while (fgets(line, sizeof(line), fp1)) {
+//     // strcpy(thirdLastLine,secondLastLine);
+//     strcpy(secondLastLine, lastLine);
+//     strcpy(lastLine, line);
+//   }
+
+//   printf("%s",lastLine);  
+//   fclose(fp1);
+
+// }
+
 void get_last_line(char **inputline) {
+    last_command_up = 1;
+    FILE *fp1 = fopen(path_memory, "r");
 
-  last_command_up = 1;
-//   printf("entering getlastline\n");
-  FILE *fp1 = fopen(path_memory, "r");
+    if (fp1 == NULL) {
+        perror("Error opening file");
+        return;
+    }
 
-  if (fp1 == NULL) {
-    perror("Error opening file");
-    return;
-  }
+    char line[MAX_LINE_LENGTH] = "";
+    char lastLine[MAX_LINE_LENGTH] = "";
 
-  char line[MAX_LINE_LENGTH] = "";
-  char lastLine[MAX_LINE_LENGTH] = "";
-  char secondLastLine[MAX_LINE_LENGTH] = "";
-  // char thirdLastLine[MAX_LINE_LENGTH] = "";
+    // Read each line and store the last one in lastLine
+    while (fgets(line, sizeof(line), fp1)) {
+        strcpy(lastLine, line);
+    }
 
-//   printf("path is %s\n", path_memory);
+    fclose(fp1);
 
-  // Read each line and store the last one in lastLine
-  while (fgets(line, sizeof(line), fp1)) {
-    // strcpy(thirdLastLine,secondLastLine);
-    strcpy(secondLastLine, lastLine);
-    strcpy(lastLine, line);
-  }
+    // Remove newline character if present
+    size_t len = strlen(lastLine);
+    if (len > 0 && lastLine[len-1] == '\n') {
+        lastLine[len-1] = '\0';
+    }
 
-  //   printf("testt\n");
-  //   Close the file
-  system(lastLine);  // fix this later on
-  
-//   strcpy(*inputline, lastLine);
-//   printf("last linee : %s\n",*inputline);
+    // Allocate memory for inputline and copy lastLine
+    *inputline = strdup(lastLine);
+    if (*inputline == NULL) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+}
 
-//   last_command_up = 0;
-  fclose(fp1);
 
-  // Print the last line
-  // printf("Last command: %s\n", lastLine);
-  // fflush(stdin);
+void print_prompt(const char *PATH) {
+    char last_component[PATH_MAX];
+    get_last_path_component(PATH, last_component);
+
+    if (strcmp(PATH, "/") == 0) {
+        printf("%s@PSH → %s $ ", getenv("USER"), "/");
+    } else {
+        printf("%s@PSH → %s $ ", getenv("USER"), last_component);
+    }
+    fflush(stdout);
+}
+
+void load_history() {
+
+    free_history(); //free existing history
+    
+    // char *history[MAX_HISTORY];
+    // int history_count = 0;
+    // int current_history = -1;
+
+    FILE *fp = fopen(path_memory, "r");
+    if (fp == NULL) {
+        perror("Error opening history file");
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    while (fgets(line, sizeof(line), fp) && history_count < MAX_HISTORY) {
+        size_t len = strlen(line);
+        if (len > 0 && line[len-1] == '\n') {
+            line[len-1] = '\0';
+        }
+        history[history_count] = strdup(line);
+
+        if(history[history_count] == NULL) {
+            perror("mem alloc failed");
+            free_history();
+            fclose(fp);
+            return;
+        }
+        history_count++;
+
+    }
+
+    fclose(fp);
+}
+
+void free_history() {
+    for (int i = 0; i < history_count; i++) {
+        free(history[i]);
+    }
+    history_count = 0;
+}
+
+int kbhit(void) {
+    struct termios oldt, newt;
+    int ch;
+    int oldf;
+
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+
+    ch = getchar();
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+    if (ch != EOF) {
+        ungetc(ch, stdin);
+        return 1;
+    }
+
+    return 0;
 }

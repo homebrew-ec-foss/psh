@@ -2,6 +2,10 @@
 char path_memory[PATH_MAX]="";
 int last_command_up = 0;
 
+char *history[MAX_HISTORY];
+int history_count = 0;
+int current_history = -1;
+
 // Helper function to split the input line by ';'
 
 /*char **split_commands(char *input)
@@ -231,60 +235,105 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
     return 1;
 }
 
-void handle_input(char **inputline, size_t *n)
-{
-    char last_component[PATH_MAX];
-    get_last_path_component(PATH, last_component);
+void handle_input(char **inputline, size_t *n, const char *PATH) {
 
-    if (strcmp(PATH, "/") == 0)
-    {
-        printf("%s@PSH → %s $ ", getenv("USER"), "/");
-    }
-    else
-    {
-        printf("%s@PSH → %s $ ", getenv("USER"), last_component);
+    if (history_count == 0) {
+        load_history();
     }
 
+    print_prompt(PATH);
 
-    // handling UP arrow 
-    char c;
-    // FILE *fd = fopen("/.files/MEMORY_HISTORY_FILE", "r");
-     if ((c = getchar()) == '\033') {
-      char next = getchar();
-      if (next == '[') {
-        char arrow = getchar();
-        if (arrow == 'A') {
-        // Up arrow detected
-        //   printf("Up Arrow\n");  
-          printf("\033[2K\r");
-
-        // now we need to get the previous command executed from HISTORY_FILE
-        // printf("code is coming here\n");
-          get_last_line(inputline);
-          printf("\033[2K\r");
-        // continue;  // Skip the rest of the loop and prompt again
-        }
-      }
-      ungetc(c, stdin);  // Put back the character if it's not an arrow sequence
-    } else {
-      ungetc(c, stdin);  // Put back the character for getline to read
-    }
-
-    if (getline(inputline, n, stdin) == -1)
-    {
-        perror("getline");
+    *n = 0;
+    if (*inputline != NULL) {
         free(*inputline);
+        *inputline = NULL;
+    }
+
+    char buffer[MAX_LINE_LENGTH] = {0};
+    size_t pos = 0;
+    current_history = -1;
+
+    while (1) {
+        if (kbhit()) {
+            char ch = getchar();
+            if (ch == '\033') { // ESC character
+                getchar(); // skip the [
+                ch = getchar();
+                if (ch == ARROW_UP) {
+                    if (current_history < history_count - 1) {
+                        current_history++;
+                        strcpy(buffer, history[history_count - 1 - current_history]);
+                        pos = strlen(buffer);
+                        printf("\r\033[K"); // Clear the current line
+                        print_prompt(PATH);
+                        printf("%s", buffer);
+                        fflush(stdout);
+                    }
+                } else if (ch == ARROW_DOWN) {
+                    if (current_history > 0) {
+                        current_history--;
+                        strcpy(buffer, history[history_count - 1 - current_history]);
+                    } else {
+                        current_history = -1;
+                        buffer[0] = '\0';
+                    }
+                    pos = strlen(buffer);
+                    printf("\r\033[K"); // Clear the current line
+                    print_prompt(PATH);
+                    printf("%s", buffer);
+                    fflush(stdout);
+                }
+            } else if (ch == BACKSPACE) {
+                if (pos > 0) {
+                    pos--;
+                    buffer[pos] = '\0';
+                    printf("\b \b");
+                    fflush(stdout);
+                }
+            } else if (ch == '\n') {
+                buffer[pos] = '\0';
+                printf("\n");
+                break;
+            } else {
+                if (pos < MAX_LINE_LENGTH - 1) {
+                    buffer[pos++] = ch;
+                    putchar(ch);
+                    fflush(stdout);
+                }
+            }
+        }
+    }
+
+    *inputline = strdup(buffer);
+    if (*inputline == NULL) {
+        perror("Memory allocation failed");
         exit(EXIT_FAILURE);
     }
-
-    (*inputline)[strcspn(*inputline, "\n")] = '\0';
+    *n = strlen(*inputline);
 
     char *comment_pos = strchr(*inputline, '#');
-    if (comment_pos)
-    {
+    if (comment_pos) {
         *comment_pos = '\0';
     }
+
+    // Add the new command to history
+    if (strlen(*inputline) > 0) {
+        if (history_count == MAX_HISTORY) {
+            free(history[0]);
+            for (int i = 1; i < MAX_HISTORY; i++) {
+                history[i-1] = history[i];
+            }
+            history_count--;
+        }
+        history[history_count] = strdup(*inputline);
+        if (history[history_count]==NULL) {
+            perror("mem alloc failed");
+            exit(EXIT_FAILURE);
+        }
+        history_count++;
+    }
 }
+
 
 void save_history(const char *inputline)
 {

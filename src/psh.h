@@ -17,10 +17,19 @@
 #include <glob.h>
 #include <time.h>
 #include <stdbool.h>
+#include <fcntl.h>
+#include <termios.h>
+
 
 #define MAX_HISTORY 1024
 #define MAX_LINE_LENGTH 1024
 #define MAX_VARS 100
+#define PATH_MAX 4096
+#define ARROW_UP 65
+#define ARROW_DOWN 66
+#define MAX_LINE_LENGTH 1024
+#define BACKSPACE 127
+
 // #define MAX_FUNCS 100
 
 // Defining Structs to hold variables and functions
@@ -44,9 +53,17 @@ extern char PREV_DIR[PATH_MAX];
 extern char PATH[PATH_MAX];
 extern char path_memory[PATH_MAX];
 
+extern int last_command_up;
+extern char path_memory[];
+
 extern struct Variable global_vars[MAX_VARS]; // Global array to store variables
 extern int num_vars; 
-extern int last_command_up;              // Number of variables currently stored
+extern int last_command_up;
+
+extern char *history[MAX_HISTORY];
+extern int history_count;
+extern int current_history;
+
 // struct Func global_funcs[MAX_FUNCS];
 // int num_funcs = 0;
 
@@ -60,10 +77,11 @@ int PSH_LOOP(void);
 // execute.c functions
 char **PSH_TOKENIZER(char *);
 int PSH_EXEC_EXTERNAL(char **);
-void handle_input(char **, size_t *);
+void handle_input(char **, size_t *, const char *);
 void save_history(const char *);
 void process_commands(char *, int *);
 void execute_command(char **, int *);
+int kbhit();
 
 // helper functions
 void free_double_pointer(char **array);
@@ -88,5 +106,8 @@ char *find_closing_done(char *);
 void process_nested_loops(char *, int *);
 char *process_for_loop(char *, int *);
 void get_last_line(char **);
+void print_prompt(const char *);
+void load_history();
+void free_history();
 
 #endif

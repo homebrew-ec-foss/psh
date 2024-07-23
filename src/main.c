@@ -1,6 +1,5 @@
 // main.c
 #include "psh.h"
-#include <stdio.h>
 
 // Unused Parameters
 int main(int argc, char **argv, char **envp)
@@ -17,6 +16,8 @@ int main(int argc, char **argv, char **envp)
         strcpy(PATH, cwd);
         return PSH_LOOP();
     }
+    free_history();
+    return 0;
 }
 
 int PSH_LOOP(void)
@@ -29,7 +30,7 @@ int PSH_LOOP(void)
 
     while (run == 1)
     {
-        handle_input(&inputline, &n);
+        handle_input(&inputline, &n, PATH);
         if (inputline[0] == '\0')
         {
             continue;
