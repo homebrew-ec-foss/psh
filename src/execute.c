@@ -2,53 +2,11 @@
 char path_memory[PATH_MAX]="";
 int last_command_up = 0;
 
-char *history[MAX_HISTORY];
+char *history[PATH_MAX];
 int history_count = 0;
 int current_history = -1;
 
 // Helper function to split the input line by ';'
-
-/*char **split_commands(char *input)
-{
-    size_t bufsize = 64, position = 0;
-    char **commands = malloc(bufsize * sizeof(char *));
-    char *command;
-
-    if (!commands)
-    {
-        fprintf(stderr, "psh: allocation error\n");
-        exit(EXIT_FAILURE);
-    }
-
-    command = strtok(input, ";");
-    while (command != NULL)
-    {
-        commands[position] = malloc((strlen(command) + 1) * sizeof(char));
-        if (!commands[position])
-        {
-            fprintf(stderr, "psh: allocation error\n");
-            exit(EXIT_FAILURE);
-        }
-        strcpy(commands[position], command);
-        position++;
-
-        if (position >= bufsize)
-        {
-            bufsize += 64;
-            commands = realloc(commands, bufsize * sizeof(char *));
-            if (!commands)
-            {
-                fprintf(stderr, "psh: allocation error\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-
-        command = strtok(NULL, ";");
-    }
-    commands[position] = NULL;
-    return commands;
-}*/
-
 char **split_commands(char *input)
 {
     size_t bufsize = 64, position = 0;
@@ -235,120 +193,6 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
     return 1;
 }
 
-// void handle_input(char **inputline, size_t *n, const char *PATH) {
-
-//     if (history_count == 0) {
-//         load_history();
-//     }
-
-//     print_prompt(PATH);
-
-//     *n = 0;
-//     if (*inputline != NULL) {
-//         free(*inputline);
-//         *inputline = NULL;
-//     }
-
-//     char buffer[MAX_LINE_LENGTH] = {0};
-//     size_t pos = 0;
-//     size_t cursor = 0;
-//     current_history = -1;
-
-//     while (1) {
-//         if (kbhit()) {
-//             char ch = getchar();
-//             if (ch == '\033') { // ESC character
-//                 getchar(); // skip the [
-//                 ch = getchar();
-//                 if (ch == ARROW_UP) {
-//                     if (current_history < history_count - 1) {
-//                         current_history++;
-//                         strcpy(buffer, history[history_count - 1 - current_history]);
-//                         pos = strlen(buffer);
-//                         printf("\r\033[K"); // Clear the current line
-//                         print_prompt(PATH);
-//                         printf("%s", buffer);
-//                         fflush(stdout);
-//                     }
-//                 } else if (ch == ARROW_DOWN) {
-//                     if (current_history > 0) {
-//                         current_history--;
-//                         strcpy(buffer, history[history_count - 1 - current_history]);
-//                     } else {
-//                         current_history = -1;
-//                         buffer[0] = '\0';
-//                     }
-//                     pos = strlen(buffer);
-//                     printf("\r\033[K"); // Clear the current line
-//                     print_prompt(PATH);
-//                     printf("%s", buffer);
-//                     fflush(stdout);
-//                 }
-//                 else if (ch == ARROW_LEFT) {
-//                     if (cursor > 0) {
-//                         cursor--;
-//                         printf("\b");
-//                         fflush(stdout);
-//                     }
-//                 } else if (ch == ARROW_RIGHT) {
-//                     if (cursor < pos) {
-//                         printf("%c", buffer[cursor]);
-//                         cursor++;
-//                         fflush(stdout);
-//                     }
-//                 }
-            
-//             } else if (ch == BACKSPACE) {
-//                 if (pos > 0) {
-//                     pos--;
-//                     buffer[pos] = '\0';
-//                     printf("\b \b");
-//                     fflush(stdout);
-//                 }
-//             } else if (ch == '\n') {
-//                 buffer[pos] = '\0';
-//                 printf("\n");
-//                 break;
-//             } else {
-//                 if (pos < MAX_LINE_LENGTH - 1) {
-//                     buffer[pos++] = ch;
-//                     putchar(ch);
-//                     fflush(stdout);
-//                 }
-//             }
-//         }
-//     }
-
-//     *inputline = strdup(buffer);
-//     if (*inputline == NULL) {
-//         perror("Memory allocation failed");
-//         exit(EXIT_FAILURE);
-//     }
-//     *n = strlen(*inputline);
-
-//     char *comment_pos = strchr(*inputline, '#');
-//     if (comment_pos) {
-//         *comment_pos = '\0';
-//     }
-
-//     // Add the new command to history
-//     if (strlen(*inputline) > 0) {
-//         if (history_count == MAX_HISTORY) {
-//             free(history[0]);
-//             for (int i = 1; i < MAX_HISTORY; i++) {
-//                 history[i-1] = history[i];
-//             }
-//             history_count--;
-//         }
-//         history[history_count] = strdup(*inputline);
-//         if (history[history_count]==NULL) {
-//             perror("mem alloc failed");
-//             exit(EXIT_FAILURE);
-//         }
-//         history_count++;
-//     }
-// }
-
 void handle_input(char **inputline, size_t *n, const char *PATH) {
     if (history_count == 0) {
         load_history();
@@ -362,10 +206,13 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
         *inputline = NULL;
     }
 
-    char buffer[MAX_LINE_LENGTH] = {0};
+    enableRawMode();
+
+    char buffer[PATH_MAX] = {0};
     size_t pos = 0;
     size_t cursor = 0;
     current_history = -1;
+
 
     while (1) {
         if (kbhit()) {
@@ -439,8 +286,9 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
             }
         }
     }
-
-    *inputline = strdup(buffer);
+    disableRawMode();
+    char *trimmed_input = trim_whitespace(buffer);
+    *inputline = strdup(trimmed_input);
     if (*inputline == NULL) {
         perror("Memory allocation failed");
         exit(EXIT_FAILURE);
@@ -453,9 +301,9 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
     }
 
     if (strlen(*inputline) > 0) {
-        if (history_count == MAX_HISTORY) {
+        if (history_count == PATH_MAX) {
             free(history[0]);
-            for (int i = 1; i < MAX_HISTORY; i++) {
+            for (int i = 1; i < PATH_MAX; i++) {
                 history[i-1] = history[i];
             }
             history_count--;
@@ -508,6 +356,12 @@ void process_commands(char *inputline, int *run){
 
         if (token_arr[0] != NULL)
         {
+            if(!strcmp(token_arr[0],"exit"))
+            {
+                free(inputline);
+                free_double_pointer(commands);
+                free_history();
+            }
             execute_command(token_arr, run);
         }
 
@@ -517,8 +371,7 @@ void process_commands(char *inputline, int *run){
     free_double_pointer(commands);
 }
 
-void execute_command(char **token_arr, int *run)
-{
+void execute_command(char **token_arr, int *run){
     if (strchr(token_arr[0], '='))
     {
         char *var_name = strtok(token_arr[0], "=");

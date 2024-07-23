@@ -19,10 +19,9 @@
 #include <stdbool.h>
 #include <fcntl.h>
 #include <termios.h>
+#include <ctype.h>
 
 
-#define MAX_HISTORY 1024
-#define MAX_LINE_LENGTH 1024
 #define MAX_VARS 100
 #define PATH_MAX 4096
 #define ARROW_UP 65
@@ -62,7 +61,7 @@ extern struct Variable global_vars[MAX_VARS]; // Global array to store variables
 extern int num_vars; 
 extern int last_command_up;
 
-extern char *history[MAX_HISTORY];
+extern char *history[PATH_MAX];
 extern int history_count;
 extern int current_history;
 
@@ -111,5 +110,8 @@ void get_last_line(char **);
 void print_prompt(const char *);
 void load_history();
 void free_history();
+void enableRawMode();
+void disableRawMode();
+char *trim_whitespace(char *);
 
 #endif

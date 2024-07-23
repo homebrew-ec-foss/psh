@@ -222,8 +222,7 @@ void remove_line(const char *filename, size_t line_to_remove)
     }
 }
 
-void delete_file(const char *filename)
-{
+void delete_file(const char *filename){
     if (remove(filename) != 0)
     {
         perror("Error deleting file");
@@ -568,32 +567,6 @@ char *process_for_loop(char *loop_command, int *run)
     return commands_end + 4; // Return the position after "done"
 }
 
-// void get_last_line(char **inputline) {
-
-//   last_command_up = 1;
-//   FILE *fp1 = fopen(path_memory, "r");
-
-//   if (fp1 == NULL) {
-//     perror("Error opening file");
-//     return;
-//   }
-
-//   char line[MAX_LINE_LENGTH] = "";
-//   char lastLine[MAX_LINE_LENGTH] = "";
-//   char secondLastLine[MAX_LINE_LENGTH] = "";
-
-//   // Read each line and store the last one in lastLine
-//   while (fgets(line, sizeof(line), fp1)) {
-//     // strcpy(thirdLastLine,secondLastLine);
-//     strcpy(secondLastLine, lastLine);
-//     strcpy(lastLine, line);
-//   }
-
-//   printf("%s",lastLine);  
-//   fclose(fp1);
-
-// }
-
 void get_last_line(char **inputline) {
     last_command_up = 1;
     FILE *fp1 = fopen(path_memory, "r");
@@ -627,7 +600,6 @@ void get_last_line(char **inputline) {
     }
 }
 
-
 void print_prompt(const char *PATH) {
     char last_component[PATH_MAX];
     get_last_path_component(PATH, last_component);
@@ -655,7 +627,7 @@ void load_history() {
     }
 
     char line[MAX_LINE_LENGTH];
-    while (fgets(line, sizeof(line), fp) && history_count < MAX_HISTORY) {
+    while (fgets(line, sizeof(line), fp) && history_count < PATH_MAX) {
         size_t len = strlen(line);
         if (len > 0 && line[len-1] == '\n') {
             line[len-1] = '\0';
@@ -705,4 +677,38 @@ int kbhit(void) {
     }
 
     return 0;
+}
+// Function to enable raw mode
+void enableRawMode() {
+    struct termios raw;
+    tcgetattr(STDIN_FILENO, &raw);
+    raw.c_lflag &= ~(ECHO | ICANON);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
+// Function to disable raw mode
+void disableRawMode() {
+    struct termios raw;
+    tcgetattr(STDIN_FILENO, &raw);
+    raw.c_lflag |= (ECHO | ICANON);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
+char *trim_whitespace(char *str) {
+    char *end;
+
+    // Trim leading space
+    while (isspace((unsigned char)*str)) str++;
+
+    if (*str == 0)  // All spaces
+        return str;
+
+    // Trim trailing space
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) end--;
+
+    // Write new null terminator character
+    end[1] = '\0';
+
+    return str;
 }
