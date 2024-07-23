@@ -1,7 +1,5 @@
 // helpers.c
 #include "psh.h"
-#include <stdio.h>
-#include <string.h>
 // char path_memory[PATH_MAX];
 
 void free_double_pointer(char **array)
@@ -671,7 +669,6 @@ void load_history() {
             return;
         }
         history_count++;
-
     }
 
     fclose(fp);
@@ -682,6 +679,7 @@ void free_history() {
         free(history[i]);
     }
     history_count = 0;
+    // free_double_pointer(history);
 }
 
 int kbhit(void) {
@@ -691,8 +689,8 @@ int kbhit(void) {
 
     tcgetattr(STDIN_FILENO, &oldt);
     newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    newt.c_lflag &= ~(ICANON | ECHO); //disables canonical mode & echo 
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt); //sets new terminal settings
     oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
     fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
 
