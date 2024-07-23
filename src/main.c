@@ -36,14 +36,7 @@ int PSH_LOOP(void)
             continue;
         }
         save_history(inputline);
-        if (last_command_up == 0) {
-            process_commands(inputline, &run);
-        }
-        else {
-            last_command_up = 0;
-        }
-        // continue;
-        
+        process_commands(inputline, &run);
     }
     free(inputline);
     return run;

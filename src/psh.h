@@ -24,10 +24,10 @@
 
 #define MAX_VARS 100
 #define PATH_MAX 4096
-#define ARROW_UP 65
-#define ARROW_DOWN 66
-#define ARROW_LEFT 68
-#define ARROW_RIGHT 67
+#define ARROW_UP 'A'
+#define ARROW_DOWN 'B'
+#define ARROW_LEFT 'D'
+#define ARROW_RIGHT 'C'
 #define MAX_LINE_LENGTH 1024
 #define BACKSPACE 127
 

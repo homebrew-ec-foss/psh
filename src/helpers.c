@@ -682,7 +682,7 @@ int kbhit(void) {
 void enableRawMode() {
     struct termios raw;
     tcgetattr(STDIN_FILENO, &raw);
-    raw.c_lflag &= ~(ECHO | ICANON);
+    raw.c_lflag &= ~(ECHO | ICANON);                //change from canonical to raw and turning off echo
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
@@ -690,7 +690,7 @@ void enableRawMode() {
 void disableRawMode() {
     struct termios raw;
     tcgetattr(STDIN_FILENO, &raw);
-    raw.c_lflag |= (ECHO | ICANON);
+    raw.c_lflag |= (ECHO | ICANON);                 //change from raw to canonical and turning on echo
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
