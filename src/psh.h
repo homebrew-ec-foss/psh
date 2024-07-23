@@ -27,6 +27,8 @@
 #define PATH_MAX 4096
 #define ARROW_UP 65
 #define ARROW_DOWN 66
+#define ARROW_LEFT 68
+#define ARROW_RIGHT 67
 #define MAX_LINE_LENGTH 1024
 #define BACKSPACE 127
 

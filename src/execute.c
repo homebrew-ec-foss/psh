@@ -235,8 +235,121 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
     return 1;
 }
 
-void handle_input(char **inputline, size_t *n, const char *PATH) {
+// void handle_input(char **inputline, size_t *n, const char *PATH) {
 
+//     if (history_count == 0) {
+//         load_history();
+//     }
+
+//     print_prompt(PATH);
+
+//     *n = 0;
+//     if (*inputline != NULL) {
+//         free(*inputline);
+//         *inputline = NULL;
+//     }
+
+//     char buffer[MAX_LINE_LENGTH] = {0};
+//     size_t pos = 0;
+//     size_t cursor = 0;
+//     current_history = -1;
+
+//     while (1) {
+//         if (kbhit()) {
+//             char ch = getchar();
+//             if (ch == '\033') { // ESC character
+//                 getchar(); // skip the [
+//                 ch = getchar();
+//                 if (ch == ARROW_UP) {
+//                     if (current_history < history_count - 1) {
+//                         current_history++;
+//                         strcpy(buffer, history[history_count - 1 - current_history]);
+//                         pos = strlen(buffer);
+//                         printf("\r\033[K"); // Clear the current line
+//                         print_prompt(PATH);
+//                         printf("%s", buffer);
+//                         fflush(stdout);
+//                     }
+//                 } else if (ch == ARROW_DOWN) {
+//                     if (current_history > 0) {
+//                         current_history--;
+//                         strcpy(buffer, history[history_count - 1 - current_history]);
+//                     } else {
+//                         current_history = -1;
+//                         buffer[0] = '\0';
+//                     }
+//                     pos = strlen(buffer);
+//                     printf("\r\033[K"); // Clear the current line
+//                     print_prompt(PATH);
+//                     printf("%s", buffer);
+//                     fflush(stdout);
+//                 }
+//                 else if (ch == ARROW_LEFT) {
+//                     if (cursor > 0) {
+//                         cursor--;
+//                         printf("\b");
+//                         fflush(stdout);
+//                     }
+//                 } else if (ch == ARROW_RIGHT) {
+//                     if (cursor < pos) {
+//                         printf("%c", buffer[cursor]);
+//                         cursor++;
+//                         fflush(stdout);
+//                     }
+//                 }
+            
+//             } else if (ch == BACKSPACE) {
+//                 if (pos > 0) {
+//                     pos--;
+//                     buffer[pos] = '\0';
+//                     printf("\b \b");
+//                     fflush(stdout);
+//                 }
+//             } else if (ch == '\n') {
+//                 buffer[pos] = '\0';
+//                 printf("\n");
+//                 break;
+//             } else {
+//                 if (pos < MAX_LINE_LENGTH - 1) {
+//                     buffer[pos++] = ch;
+//                     putchar(ch);
+//                     fflush(stdout);
+//                 }
+//             }
+//         }
+//     }
+
+//     *inputline = strdup(buffer);
+//     if (*inputline == NULL) {
+//         perror("Memory allocation failed");
+//         exit(EXIT_FAILURE);
+//     }
+//     *n = strlen(*inputline);
+
+//     char *comment_pos = strchr(*inputline, '#');
+//     if (comment_pos) {
+//         *comment_pos = '\0';
+//     }
+
+//     // Add the new command to history
+//     if (strlen(*inputline) > 0) {
+//         if (history_count == MAX_HISTORY) {
+//             free(history[0]);
+//             for (int i = 1; i < MAX_HISTORY; i++) {
+//                 history[i-1] = history[i];
+//             }
+//             history_count--;
+//         }
+//         history[history_count] = strdup(*inputline);
+//         if (history[history_count]==NULL) {
+//             perror("mem alloc failed");
+//             exit(EXIT_FAILURE);
+//         }
+//         history_count++;
+//     }
+// }
+
+void handle_input(char **inputline, size_t *n, const char *PATH) {
     if (history_count == 0) {
         load_history();
     }
@@ -251,6 +364,7 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
 
     char buffer[MAX_LINE_LENGTH] = {0};
     size_t pos = 0;
+    size_t cursor = 0;
     current_history = -1;
 
     while (1) {
@@ -259,35 +373,51 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
             if (ch == '\033') { // ESC character
                 getchar(); // skip the [
                 ch = getchar();
-                if (ch == ARROW_UP) {
-                    if (current_history < history_count - 1) {
+                if (ch == ARROW_UP || ch == ARROW_DOWN) {
+                    if (ch == ARROW_UP && current_history < history_count - 1) {
                         current_history++;
-                        strcpy(buffer, history[history_count - 1 - current_history]);
-                        pos = strlen(buffer);
-                        printf("\r\033[K"); // Clear the current line
-                        print_prompt(PATH);
-                        printf("%s", buffer);
-                        fflush(stdout);
-                    }
-                } else if (ch == ARROW_DOWN) {
-                    if (current_history > 0) {
+                    } else if (ch == ARROW_DOWN && current_history > -1) {
                         current_history--;
-                        strcpy(buffer, history[history_count - 1 - current_history]);
-                    } else {
-                        current_history = -1;
-                        buffer[0] = '\0';
                     }
-                    pos = strlen(buffer);
+                    
+                    if (current_history >= 0) {
+                        strncpy(buffer, history[history_count - 1 - current_history], MAX_LINE_LENGTH - 1);
+                        buffer[MAX_LINE_LENGTH - 1] = '\0';
+                        pos = strlen(buffer);
+                        cursor = pos;
+                    } else {
+                        buffer[0] = '\0';
+                        pos = 0;
+                        cursor = 0;
+                    }
+                    
                     printf("\r\033[K"); // Clear the current line
                     print_prompt(PATH);
                     printf("%s", buffer);
                     fflush(stdout);
+                
+                } else if (ch == ARROW_LEFT) {
+                    if (cursor > 0) {
+                        cursor--;
+                        printf("\b");
+                        fflush(stdout);
+                    }
+                } else if (ch == ARROW_RIGHT) {
+                    if (cursor < pos) {
+                        printf("%c", buffer[cursor]);
+                        cursor++;
+                        fflush(stdout);
+                    }
                 }
             } else if (ch == BACKSPACE) {
-                if (pos > 0) {
+                if (cursor > 0) {
+                    memmove(&buffer[cursor-1], &buffer[cursor], pos - cursor + 1);
                     pos--;
-                    buffer[pos] = '\0';
-                    printf("\b \b");
+                    cursor--;
+                    printf("\b\033[K%s", &buffer[cursor]);
+                    for (size_t i = pos; i > cursor; i--) {
+                        printf("\b");
+                    }
                     fflush(stdout);
                 }
             } else if (ch == '\n') {
@@ -296,8 +426,14 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                 break;
             } else {
                 if (pos < MAX_LINE_LENGTH - 1) {
-                    buffer[pos++] = ch;
-                    putchar(ch);
+                    memmove(&buffer[cursor+1], &buffer[cursor], pos - cursor + 1);
+                    buffer[cursor] = ch;
+                    pos++;
+                    printf("%s", &buffer[cursor]);
+                    cursor++;
+                    for (size_t i = pos; i > cursor; i--) {
+                        printf("\b");
+                    }
                     fflush(stdout);
                 }
             }
@@ -316,7 +452,6 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
         *comment_pos = '\0';
     }
 
-    // Add the new command to history
     if (strlen(*inputline) > 0) {
         if (history_count == MAX_HISTORY) {
             free(history[0]);
@@ -326,14 +461,13 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
             history_count--;
         }
         history[history_count] = strdup(*inputline);
-        if (history[history_count]==NULL) {
-            perror("mem alloc failed");
+        if (history[history_count] == NULL) {
+            perror("Memory allocation failed");
             exit(EXIT_FAILURE);
         }
         history_count++;
     }
 }
-
 
 void save_history(const char *inputline)
 {
