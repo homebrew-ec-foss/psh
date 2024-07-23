@@ -696,24 +696,35 @@ void load_aliases(HashMap *map, const char *filepath)
     FILE *fp = fopen(filepath, "r");
     if (!fp)
     {
-        perror("PSH: Failed to open file");
-        return;
-    }
-    char line[256];
-    while (fgets(line, sizeof(line), fp))
-    {
-        if (strchr(line, '='))
+        fp = fopen(filepath, "w");
+        if (!fp)
         {
-            char *name = strtok(line, "=");
-            char *command = strtok(NULL, "=");
-            if (command && strchr(command, '\n'))
-            {
-                *strchr(command, '\n') = '\0';
-            }
-            insert_alias(map, name, command);
+            perror("Failed to create ALIAS file\n");
+            free(map->buckets);
+            free(map);
+            return -1;
         }
+        fclose(fp);
+        fp = fopen(filepath, "r");
     }
-    fclose(fp);
+    if (fp != NULL)
+    {
+        char line[256];
+        while (fgets(line, sizeof(line), fp))
+        {
+            if (strchr(line, '='))
+            {
+                char *name = strtok(line, "=");
+                char *command = strtok(NULL, "=");
+                if (command && strchr(command, '\n'))
+                {
+                    *strchr(command, '\n') = '\0';
+                }
+                insert_alias(map, name, command);
+            }
+        }
+        fclose(fp);
+    }
 }
 
 void save_aliases(HashMap *map, const char *filepath)

@@ -7,8 +7,8 @@
 // variables
 
 char cwd[PATH_MAX];
-char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for", "type","read", "alias"};
-int (*builtin_func[])(char **) = {&PSH_EXIT, &PSH_CD, &PSH_ECHO, &PSH_PWD, &PSH_FC, &PSH_EXPORT, &PSH_FOR, &PSH_TYPE, &PSH_READ_SHELL, &PSH_ALIAS};
+char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for", "type","read", "alias", "unalias"};
+int (*builtin_func[])(char **) = {&PSH_EXIT, &PSH_CD, &PSH_ECHO, &PSH_PWD, &PSH_FC, &PSH_EXPORT, &PSH_FOR, &PSH_TYPE, &PSH_READ_SHELL, &PSH_ALIAS, &PSH_UNALIAS};
 int size_builtin_str = sizeof(builtin_str) / sizeof(builtin_str[0]);
 struct Variable global_vars[MAX_VARS];
 int num_vars = 0;
@@ -1281,5 +1281,44 @@ int PSH_ALIAS(char **token_arr)
 
     // Free memory
     free_map(map);
+    return 1;
+}
+
+int PSH_UNALIAS(char **token_arr)
+{
+    char ALIAS[PATH_MAX];
+    char path_memory[PATH_MAX];
+    if (!getcwd(path_memory, sizeof(path_memory)))
+    {
+        perror("Failed to get current working directory");
+        return -1;
+    }
+    snprintf(ALIAS, sizeof(ALIAS), "%s/.files/ALIAS", path_memory);
+    // Initializing HashMap
+    HashMap *map = create_map(HASHMAP_SIZE);
+    load_aliases(map, ALIAS);
+    if (token_arr[1] == NULL)
+    {
+        fprintf(stderr, "Must have flag or alias name to be removed\n");
+    }
+    else if (strcmp(token_arr[1], "-a") == 0)
+    {
+        delete_all_aliases(map);
+    }
+    else if (find(map, token_arr[1]))
+    {
+        delete_alias(map, token_arr[1]);
+    }
+    else
+    {
+        fprintf(stderr, "alias %s not found\n", token_arr[1]);
+    }
+    // Save Aliases to file
+    save_aliases(map, ALIAS);
+
+    // Free memory
+    free_map(map);
+
+    
     return 1;
 }

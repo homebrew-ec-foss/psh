@@ -21,7 +21,6 @@ int main(int argc, char **argv, char **envp)
 
 int PSH_LOOP(void)
 {
-    printf("Loop\n");
     size_t n = 0;
     int run = 1;
     char *inputline = NULL;
@@ -51,7 +50,6 @@ int PSH_LOOP(void)
 
 int PSH_SCRIPT(const char *file)
 {
-    printf("Script\n");
     FILE *script = fopen(file, "r");
 
     int run = 1;
