@@ -17,11 +17,12 @@
 #include <glob.h>
 #include <time.h>
 #include <stdbool.h>
+#include <time.h>
+#include <limits.h>
 
 #define MAX_HISTORY 1024
 #define MAX_LINE_LENGTH 1024
 #define MAX_VARS 100
-#define HASHMAP_SIZE 256
 // #define MAX_FUNCS 100
 
 // Defining Structs to hold variables and functions
@@ -36,20 +37,6 @@ struct Variable
 //     char func_def[1024];
 // };
 
-typedef struct Alias 
-{
-    char *name;
-    char *command;
-    struct Alias *next; 
-} Alias;
-
-typedef struct HashMap
-{
-    Alias **buckets;
-    int size;
-} HashMap;
-
-
 // Global Variables
 extern char cwd[PATH_MAX];
 extern char *builtin_str[];
@@ -58,6 +45,7 @@ extern int size_builtin_str;
 extern char PREV_DIR[PATH_MAX];
 extern char PATH[PATH_MAX];
 extern char path_memory[PATH_MAX];
+extern char session_id[32];
 
 extern struct Variable global_vars[MAX_VARS]; // Global array to store variables
 extern int num_vars; 
@@ -76,7 +64,7 @@ int PSH_LOOP(void);
 char **PSH_TOKENIZER(char *);
 int PSH_EXEC_EXTERNAL(char **);
 void handle_input(char **, size_t *);
-void save_history(const char *);
+void save_history(const char *, const char*);
 void process_commands(char *, int *);
 void execute_command(char **, int *);
 
