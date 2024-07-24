@@ -17,6 +17,8 @@
 #include <glob.h>
 #include <time.h>
 #include <stdbool.h>
+#include <time.h>
+#include <limits.h>
 #include <fcntl.h>
 #include <termios.h>
 #include <ctype.h>
@@ -53,6 +55,7 @@ extern int size_builtin_str;
 extern char PREV_DIR[PATH_MAX];
 extern char PATH[PATH_MAX];
 extern char path_memory[PATH_MAX];
+extern char session_id[32];
 
 extern int last_command_up;
 extern char path_memory[];
@@ -79,7 +82,7 @@ int PSH_LOOP(void);
 char **PSH_TOKENIZER(char *);
 int PSH_EXEC_EXTERNAL(char **);
 void handle_input(char **, size_t *, const char *);
-void save_history(const char *);
+void save_history(const char *, const char*);
 void process_commands(char *, int *);
 void execute_command(char **, int *);
 int kbhit();
@@ -107,6 +110,10 @@ char *find_closing_done(char *);
 void process_nested_loops(char *, int *);
 char *process_for_loop(char *, int *);
 void get_last_line(char **);
+void generate_session_id();
+void initialize_paths(const char *);
+void get_session_path(char *, size_t, const char *);
+void initialize_shell(const char *);
 void print_prompt(const char *);
 void load_history();
 void free_history();

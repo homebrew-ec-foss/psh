@@ -16,6 +16,7 @@ int main(int argc, char **argv, char **envp)
     {
         getcwd(cwd, sizeof(cwd)); // home/$USER/psh
         strcpy(PATH, cwd);
+        initialize_shell(cwd);
         return PSH_LOOP();
     }
     free_history();
@@ -37,7 +38,9 @@ int PSH_LOOP(void)
         {
             continue;
         }
-        save_history(inputline);
+        char path_session[PATH_MAX];
+        get_session_path(path_session, sizeof(path_session), cwd);
+        save_history(inputline,path_session);
         process_commands(inputline, &run);
     }
     free(inputline);
