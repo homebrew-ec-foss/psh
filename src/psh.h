@@ -119,5 +119,4 @@ void initialize_paths(const char *);
 void get_session_path(char *, size_t, const char *);
 void initialize_shell(const char *);
 
-
 #endif
