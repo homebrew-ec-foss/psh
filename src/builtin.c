@@ -663,7 +663,7 @@ int PSH_FC(char **token_arr)
         }
 
         // Reading the specified command from history
-        FILE *history = fopen(MEMORY_HISTORY_FILE, "r");
+        FILE *history = fopen(path_memory, "r");
         if (history == NULL)
         {
             perror("Error opening history file");
