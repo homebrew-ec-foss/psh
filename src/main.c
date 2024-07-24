@@ -5,7 +5,7 @@
 int main(int argc, char **argv, char **envp)
 {
 
-    printf("\e[1;1H\e[2J");
+    printf("\e[1;1H\e[2J"); // basically clears the screen
     printf("Welcome to psh!\n");
 
     if (argc == 2)
