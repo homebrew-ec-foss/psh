@@ -609,3 +609,20 @@ void get_last_line(char **inputline) {
   // printf("Last command: %s\n", lastLine);
   // fflush(stdin);
 }
+
+void generate_session_id() {
+    snprintf(session_id, sizeof(session_id), "%ld", (long)time(NULL));
+}
+
+void initialize_paths(const char *cwd) {
+    snprintf(path_memory, sizeof(path_memory), "%s/.files/MEMORY_HISTORY_FILE", cwd);
+}
+
+void get_session_path(char *path_session, size_t size, const char *cwd) {
+    snprintf(path_session, size, "%s/.files/SESSION_HISTORY_FILE_%s", cwd, session_id);
+}
+
+void initialize_shell(const char *cwd) {
+    generate_session_id();
+    initialize_paths(cwd);
+}
