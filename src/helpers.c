@@ -1,7 +1,5 @@
 // helpers.c
 #include "psh.h"
-#include <stdio.h>
-#include <stdlib.h>
 // char path_memory[PATH_MAX];
 
 void free_double_pointer(char **array)
@@ -224,8 +222,7 @@ void remove_line(const char *filename, size_t line_to_remove)
     }
 }
 
-void delete_file(const char *filename)
-{
+void delete_file(const char *filename){
     if (remove(filename) != 0)
     {
         perror("Error deleting file");
@@ -571,43 +568,149 @@ char *process_for_loop(char *loop_command, int *run)
 }
 
 void get_last_line(char **inputline) {
+    last_command_up = 1;
+    FILE *fp1 = fopen(path_memory, "r");
 
-  last_command_up = 1;
-//   printf("entering getlastline\n");
-  FILE *fp1 = fopen(path_memory, "r");
+    if (fp1 == NULL) {
+        perror("Error opening file");
+        return;
+    }
 
-  if (fp1 == NULL) {
-    perror("Error opening file");
-    return;
-  }
+    char line[MAX_LINE_LENGTH] = "";
+    char lastLine[MAX_LINE_LENGTH] = "";
 
-  char line[MAX_LINE_LENGTH] = "";
-  char lastLine[MAX_LINE_LENGTH] = "";
-  char secondLastLine[MAX_LINE_LENGTH] = "";
-  // char thirdLastLine[MAX_LINE_LENGTH] = "";
+    // Read each line and store the last one in lastLine
+    while (fgets(line, sizeof(line), fp1)) {
+        strcpy(lastLine, line);
+    }
 
-//   printf("path is %s\n", path_memory);
+    fclose(fp1);
 
-  // Read each line and store the last one in lastLine
-  while (fgets(line, sizeof(line), fp1)) {
-    // strcpy(thirdLastLine,secondLastLine);
-    strcpy(secondLastLine, lastLine);
-    strcpy(lastLine, line);
-  }
+    // Remove newline character if present
+    size_t len = strlen(lastLine);
+    if (len > 0 && lastLine[len-1] == '\n') {
+        lastLine[len-1] = '\0';
+    }
 
-  //   printf("testt\n");
-  //   Close the file
-  system(lastLine);  // fix this later on
-  
-//   strcpy(*inputline, lastLine);
-//   printf("last linee : %s\n",*inputline);
+    // Allocate memory for inputline and copy lastLine
+    *inputline = strdup(lastLine);
+    if (*inputline == NULL) {
+        perror("Memory allocation failed");
+        exit(EXIT_FAILURE);
+    }
+}
 
-//   last_command_up = 0;
-  fclose(fp1);
+void print_prompt(const char *PATH) {
+    char last_component[PATH_MAX];
+    get_last_path_component(PATH, last_component);
 
-  // Print the last line
-  // printf("Last command: %s\n", lastLine);
-  // fflush(stdin);
+    if (strcmp(PATH, "/") == 0) {
+        printf("%s@PSH → %s $ ", getenv("USER"), "/");
+    } else {
+        printf("%s@PSH → %s $ ", getenv("USER"), last_component);
+    }
+    fflush(stdout);
+}
+
+void load_history() {
+
+    free_history(); //free existing history
+    
+    // char *history[MAX_HISTORY];
+    // int history_count = 0;
+    // int current_history = -1;
+
+    FILE *fp = fopen(path_memory, "r");
+    if (fp == NULL) {
+        perror("Error opening history file");
+        return;
+    }
+
+    char line[MAX_LINE_LENGTH];
+    while (fgets(line, sizeof(line), fp) && history_count < PATH_MAX) {
+        size_t len = strlen(line);
+        if (len > 0 && line[len-1] == '\n') {
+            line[len-1] = '\0';
+        }
+        history[history_count] = strdup(line);
+
+        if(history[history_count] == NULL) {
+            perror("mem alloc failed");
+            free_history();
+            fclose(fp);
+            return;
+        }
+        history_count++;
+    }
+
+    fclose(fp);
+}
+
+void free_history() {
+    for (int i = 0; i < history_count; i++) {
+        free(history[i]);
+    }
+    history_count = 0;
+    // free_double_pointer(history);
+}
+
+int kbhit(void) {
+    struct termios oldt, newt;
+    int ch;
+    int oldf;
+
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO); //disables canonical mode & echo 
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt); //sets new terminal settings
+    oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+
+    ch = getchar();
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+    if (ch != EOF) {
+        ungetc(ch, stdin);
+        return 1;
+    }
+
+    return 0;
+}
+// Function to enable raw mode
+void enableRawMode() {
+    struct termios raw;
+    tcgetattr(STDIN_FILENO, &raw);
+    raw.c_lflag &= ~(ECHO | ICANON);                //change from canonical to raw and turning off echo
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
+// Function to disable raw mode
+void disableRawMode() {
+    struct termios raw;
+    tcgetattr(STDIN_FILENO, &raw);
+    raw.c_lflag |= (ECHO | ICANON);                 //change from raw to canonical and turning on echo
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
+char *trim_whitespace(char *str) {
+    char *end;
+
+    // Trim leading space
+    while (isspace((unsigned char)*str)) str++;
+
+    if (*str == 0)  // All spaces
+        return str;
+
+    // Trim trailing space
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) end--;
+
+    // Write new null terminator character
+    end[1] = '\0';
+
+    return str;
 }
 
 void generate_session_id() {

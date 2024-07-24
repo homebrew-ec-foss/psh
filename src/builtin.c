@@ -1,14 +1,9 @@
 #include "psh.h"
-#include <linux/limits.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
 
 // variables
 
 char cwd[PATH_MAX];
-char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for", "type","read"};
+char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for", "type", "read"};
 int (*builtin_func[])(char **) = {&PSH_EXIT, &PSH_CD, &PSH_ECHO, &PSH_PWD, &PSH_FC, &PSH_EXPORT, &PSH_FOR, &PSH_TYPE, &PSH_READ_SHELL};
 int size_builtin_str = sizeof(builtin_str) / sizeof(builtin_str[0]);
 struct Variable global_vars[MAX_VARS];
@@ -27,15 +22,14 @@ int PSH_EXIT(char **token_arr)
     {
         printf("bye bye PSH :D\n");
         delete_file(path_session);
-        // free_double_pointer(token_arr);      //now handled in process commands
-        return 0;
+        free_double_pointer(token_arr); // now handled in process commands
+        exit(0);
     }
-
     printf("bye bye PSH :D\n");
     int exit_code = atoi(token_arr[1]);
-    // free_double_pointer(token_arr);
+    free_double_pointer(token_arr);
     delete_file(path_session);
-    return exit_code;
+    exit(exit_code);
 }
 
 int PSH_CD(char **token_arr)
@@ -669,7 +663,7 @@ int PSH_FC(char **token_arr)
         }
 
         // Reading the specified command from history
-        FILE *history = fopen(MEMORY_HISTORY_FILE, "r");
+        FILE *history = fopen(path_memory, "r");
         if (history == NULL)
         {
             perror("Error opening history file");
@@ -704,8 +698,7 @@ int PSH_FC(char **token_arr)
         // Performing string replacement if specified
         if (old_word != NULL && new_word != NULL)
         {
-            char *replaced_line =
-                malloc(len * 2); // Allocate more space for potential expansion
+            char *replaced_line = malloc(len * 2); // Allocate more space for potential expansion
             if (replaced_line == NULL)
             {
                 perror("Memory allocation error");
@@ -1076,14 +1069,13 @@ int PSH_FOR(char **token_arr)
     return run;
 }
 
-int PSH_TYPE(char **token_arr) // usage type <command> 
+int PSH_TYPE(char **token_arr) // usage type <command>
 {
-    /* METHOD 1 */ 
+    /* METHOD 1 */
 
     // char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for", "type"}; // for reference
     // int i = 0;
     // bool is_builtin = false;
-
 
     // while (i < size_builtin_str) {
     //     if(strcmp(token_arr[1], builtin_str[i]) == 0) {
@@ -1093,7 +1085,7 @@ int PSH_TYPE(char **token_arr) // usage type <command>
     //     }
     //     i++;
     // }
-    
+
     // if (is_builtin) {
     //     printf("isbuiltin\n");
     //     return 1;
@@ -1103,7 +1095,8 @@ int PSH_TYPE(char **token_arr) // usage type <command>
     //     return 1;
     // }
 
-    if (token_arr[1] == NULL) {
+    if (token_arr[1] == NULL)
+    {
         printf("Usage: type <command>\n");
         return 1;
     }
@@ -1111,9 +1104,10 @@ int PSH_TYPE(char **token_arr) // usage type <command>
     /* BETTER METHOD */
 
     // handling pwd, echo as in PSH they are built-ins
-    if ((strcmp(token_arr[1], "pwd") == 0) || (strcmp(token_arr[1], "echo") == 0)) {   
-      printf("%s is a PSH shell builtn\n", token_arr[1]);
-      return 1;
+    if ((strcmp(token_arr[1], "pwd") == 0) || (strcmp(token_arr[1], "echo") == 0))
+    {
+        printf("%s is a PSH shell builtn\n", token_arr[1]);
+        return 1;
     }
 
     char buff1[1024 * 4];
@@ -1121,118 +1115,122 @@ int PSH_TYPE(char **token_arr) // usage type <command>
     struct stat stats;
     int perms = 0; // default is shell builtin
 
-
     snprintf(buff1, sizeof(buff1), "/usr/bin/%s", token_arr[1]);
     snprintf(buff2, sizeof(buff2), "/bin/%s", token_arr[1]);
 
     char *common_buff = malloc(1024 * 4);
     // printf("Checking: %s\n", buff1); //debug check
 
-    if (stat(buff1, &stats) == 0) 
+    if (stat(buff1, &stats) == 0)
     {
-      // printf("Found in /usr/bin\n");
-      perms = (stats.st_mode & S_IXUSR); // perms = 0 if command is a shell built-in
-      // printf("%d\n",perms);
-      strcpy(common_buff, buff1);
-    } 
-    else if (stat(buff2, &stats) == 0) 
+        // printf("Found in /usr/bin\n");
+        perms = (stats.st_mode & S_IXUSR); // perms = 0 if command is a shell built-in
+        // printf("%d\n",perms);
+        strcpy(common_buff, buff1);
+    }
+    else if (stat(buff2, &stats) == 0)
     {
-      // printf("Found in /bin\n");
-      perms = (stats.st_mode & S_IXUSR);
-      // printf("%d\n",perms);
-      strcpy(common_buff, buff2);
+        // printf("Found in /bin\n");
+        perms = (stats.st_mode & S_IXUSR);
+        // printf("%d\n",perms);
+        strcpy(common_buff, buff2);
     }
 
     // printf("%d this is perms\n",perms);
-    if (perms == 0) 
+    if (perms == 0)
     {
-      printf("%s is a PSH shell builtn\n", token_arr[1]);
-      free(common_buff);
-    } 
-    else 
+        printf("%s is a PSH shell builtn\n", token_arr[1]);
+        free(common_buff);
+    }
+    else
     {
-      printf("%s is shell external in %s\n", token_arr[1], common_buff);
-      free(common_buff);
+        printf("%s is shell external in %s\n", token_arr[1], common_buff);
+        free(common_buff);
     }
     return 1;
 }
 
-int PSH_READ_SHELL(char **token_arr) {
+int PSH_READ_SHELL(char **token_arr)
+{
 
-  // char *buff = malloc(PATH_MAX);
-  // char **arr_vars = malloc(PATH_MAX);
-  int n = 0;
+    // char *buff = malloc(PATH_MAX);
+    // char **arr_vars = malloc(PATH_MAX);
+    int n = 0;
 
-  if (token_arr[1] == NULL) { // read
-    n = 1;
-  } 
-  else if (strcmp(token_arr[1], "<<<") == 0) { // read <<< "hello, world"
-    n = 2;
-  } 
-  else if (strcmp(token_arr[1], "-p") == 0) { // read -p "Enter prompt" var1
-    n = 3;
-  } 
-  else if (token_arr[1] != NULL) { // read var1 var2
-    n = 4;
-  }
-  
+    if (token_arr[1] == NULL)
+    { // read
+        n = 1;
+    }
+    else if (strcmp(token_arr[1], "<<<") == 0)
+    { // read <<< "hello, world"
+        n = 2;
+    }
+    else if (strcmp(token_arr[1], "-p") == 0)
+    { // read -p "Enter prompt" var1
+        n = 3;
+    }
+    else if (token_arr[1] != NULL)
+    { // read var1 var2
+        n = 4;
+    }
 
-  switch (n) {
-
-    case 1: 
+    switch (n)
     {
-      char *buff = malloc(PATH_MAX);
-      fgets(buff, PATH_MAX, stdin);
-      buff[strcspn(buff, "\n")] = '\0';
-      setenv("REPLY", buff, 1);
-      free(buff);
-      return 1;
+
+    case 1:
+    {
+        char *buff = malloc(PATH_MAX);
+        fgets(buff, PATH_MAX, stdin);
+        buff[strcspn(buff, "\n")] = '\0';
+        setenv("REPLY", buff, 1);
+        free(buff);
+        return 1;
     }
 
     case 2: // bug : also works if it is not in quotes
     {
-      setenv("REPLY", token_arr[2], 1);
+        setenv("REPLY", token_arr[2], 1);
 
-      return 1;
+        return 1;
     }
 
     case 3:
     {
-      char *buff = malloc(PATH_MAX);
-      printf("%s ",token_arr[2]); //read -p "Enter your name: " name
-      fgets(buff, PATH_MAX, stdin);
-      buff[strcspn(buff, "\n")] = '\0';
-      setenv(token_arr[3], buff, 1);
-      free(buff);
-      return 1;
+        char *buff = malloc(PATH_MAX);
+        printf("%s ", token_arr[2]); // read -p "Enter your name: " name
+        fgets(buff, PATH_MAX, stdin);
+        buff[strcspn(buff, "\n")] = '\0';
+        setenv(token_arr[3], buff, 1);
+        free(buff);
+        return 1;
     }
-    
-    case 4: 
+
+    case 4:
     {
-  
-      char *buff = malloc(PATH_MAX);
-      char **arr_vars = malloc(PATH_MAX);
- 
-      fgets(buff, PATH_MAX, stdin);
-      buff[strcspn(buff, "\n")] = '\0';
-      arr_vars = PSH_TOKENIZER(buff);
-      int k = 0;
-      while (arr_vars[k] != NULL) // printing arr_vars
-      {
-        // printf("%s\n",arr_vars[k]);
-        setenv(token_arr[k + 1], arr_vars[k], 1);
-        k++;
-      }
-      free(buff);
-      free(arr_vars);
-      return 1;
+
+        char *buff = malloc(PATH_MAX);
+        char **arr_vars = malloc(PATH_MAX);
+
+        fgets(buff, PATH_MAX, stdin);
+        buff[strcspn(buff, "\n")] = '\0';
+        arr_vars = PSH_TOKENIZER(buff);
+        int k = 0;
+        while (arr_vars[k] != NULL) // printing arr_vars
+        {
+            // printf("%s\n",arr_vars[k]);
+            setenv(token_arr[k + 1], arr_vars[k], 1);
+            k++;
+        }
+        free(buff);
+        free(arr_vars);
+        return 1;
     }
 
     default:
     {
-      fprintf(stderr,"psh error: read failed\n");
-      return -1;
+        fprintf(stderr, "psh error: read failed\n");
+        return -1;
     }
-  }
-  return 1;
+    }
+    return 1;
 }
