@@ -17,6 +17,8 @@
 #include <glob.h>
 #include <time.h>
 #include <stdbool.h>
+#include <time.h>
+#include <limits.h>
 
 #define MAX_HISTORY 1024
 #define MAX_LINE_LENGTH 1024
@@ -43,6 +45,7 @@ extern int size_builtin_str;
 extern char PREV_DIR[PATH_MAX];
 extern char PATH[PATH_MAX];
 extern char path_memory[PATH_MAX];
+extern char session_id[32];
 
 extern struct Variable global_vars[MAX_VARS]; // Global array to store variables
 extern int num_vars; 
@@ -61,7 +64,7 @@ int PSH_LOOP(void);
 char **PSH_TOKENIZER(char *);
 int PSH_EXEC_EXTERNAL(char **);
 void handle_input(char **, size_t *);
-void save_history(const char *);
+void save_history(const char *, const char*);
 void process_commands(char *, int *);
 void execute_command(char **, int *);
 
@@ -88,5 +91,9 @@ char *find_closing_done(char *);
 void process_nested_loops(char *, int *);
 char *process_for_loop(char *, int *);
 void get_last_line(char **);
+void generate_session_id();
+void initialize_paths(const char *);
+void get_session_path(char *, size_t, const char *);
+void initialize_shell(const char *);
 
 #endif

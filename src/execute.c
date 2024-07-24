@@ -1,6 +1,7 @@
 #include "psh.h"
 char path_memory[PATH_MAX]="";
 int last_command_up = 0;
+char session_id[32];
 
 // Helper function to split the input line by ';'
 
@@ -286,33 +287,31 @@ void handle_input(char **inputline, size_t *n)
     }
 }
 
-void save_history(const char *inputline)
+void save_history(const char *inputline, const char* path_session)
 {
-    FILE *fp1, *fp2;
-    
-   
-    fp1 = fopen(path_memory, "a");
+    FILE *fp_memory, *fp_session;
+    time_t timestamp;
 
-    char path_session[PATH_MAX];
-    strcpy(path_session, cwd);
-    strcat(path_session, "/.files/SESSION_HISTORY_FILE");
-    fp2 = fopen(path_session, "a");
+    fp_memory = fopen(path_memory, "a");
 
-    if (fp1 == NULL || fp2 == NULL)
+    fp_session = fopen(path_session, "a");
+
+    if (fp_memory == NULL || fp_session == NULL)
     {
         perror("Error:");
-        if (fp1)
-            fclose(fp1);
-        if (fp2)
-            fclose(fp2);
+        if (fp_memory)
+            fclose(fp_memory);
+        if (fp_session)
+            fclose(fp_session);
         exit(EXIT_FAILURE);
     }
     else
     {
-        fprintf(fp1, "%s\n", inputline);
-        fprintf(fp2, "%s\n", inputline);
-        fclose(fp1);
-        fclose(fp2);
+        // timestamp = time(NULL);
+        fprintf(fp_memory, "%s\n", inputline);
+        fprintf(fp_session, "%s\n", inputline);
+        fclose(fp_memory);
+        fclose(fp_session);
     }
 }
 

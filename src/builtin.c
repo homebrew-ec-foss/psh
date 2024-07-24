@@ -1,4 +1,5 @@
 #include "psh.h"
+#include <linux/limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,14 +17,16 @@ char PATH[PATH_MAX];
 
 int PSH_EXIT(char **token_arr)
 {
-    char PATH_DEL[PATH_MAX];
-    strcpy(PATH_DEL, cwd);
-    strcat(PATH_DEL, "/.files/SESSION_HISTORY_FILE");
+    // char PATH_DEL[PATH_MAX];
+    // strcpy(PATH_DEL, cwd);
+    // strcat(PATH_DEL, "/.files/SESSION_HISTORY_FILE");
+    char path_session[PATH_MAX];
+    get_session_path(path_session, sizeof(path_session), cwd);
 
     if (!token_arr[1])
     {
         printf("bye bye PSH :D\n");
-        delete_file(PATH_DEL);
+        delete_file(path_session);
         // free_double_pointer(token_arr);      //now handled in process commands
         return 0;
     }
@@ -31,7 +34,7 @@ int PSH_EXIT(char **token_arr)
     printf("bye bye PSH :D\n");
     int exit_code = atoi(token_arr[1]);
     // free_double_pointer(token_arr);
-    delete_file(PATH_DEL);
+    delete_file(path_session);
     return exit_code;
 }
 
@@ -354,15 +357,17 @@ int PSH_FC(char **token_arr)
     char MEMORY_HISTORY_FILE[PATH_MAX];
     char SESSION_HISTORY_FILE[PATH_MAX];
 
-    char path_memory[PATH_MAX];
-    strcpy(path_memory, cwd);
-    strcat(path_memory, "/.files/MEMORY_HISTORY_FILE");
+    // char path_memory[PATH_MAX];
+    // strcpy(path_memory, cwd);
+    // strcat(path_memory, "/.files/MEMORY_HISTORY_FILE");
     strcpy(MEMORY_HISTORY_FILE, path_memory);
 
-    char path_session[PATH_MAX];
-    strcpy(path_session, cwd);
-    strcat(path_session, "/.files/SESSION_HISTORY_FILE");
-    strcpy(SESSION_HISTORY_FILE, path_session);
+    // char path_session[PATH_MAX];
+    // strcpy(path_session, cwd);
+    // strcat(path_session, "/.files/SESSION_HISTORY_FILE");
+    // strcpy(SESSION_HISTORY_FILE, path_session);
+
+    get_session_path(SESSION_HISTORY_FILE, sizeof(SESSION_HISTORY_FILE), cwd);
 
     if (token_arr[1] == NULL)
     {
