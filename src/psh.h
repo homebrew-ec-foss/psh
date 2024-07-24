@@ -19,10 +19,20 @@
 #include <stdbool.h>
 #include <time.h>
 #include <limits.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <ctype.h>
 
-#define MAX_HISTORY 1024
-#define MAX_LINE_LENGTH 1024
+
 #define MAX_VARS 100
+#define PATH_MAX 4096
+#define ARROW_UP 'A'
+#define ARROW_DOWN 'B'
+#define ARROW_LEFT 'D'
+#define ARROW_RIGHT 'C'
+#define MAX_LINE_LENGTH 1024
+#define BACKSPACE 127
+
 // #define MAX_FUNCS 100
 
 // Defining Structs to hold variables and functions
@@ -47,9 +57,17 @@ extern char PATH[PATH_MAX];
 extern char path_memory[PATH_MAX];
 extern char session_id[32];
 
+extern int last_command_up;
+extern char path_memory[];
+
 extern struct Variable global_vars[MAX_VARS]; // Global array to store variables
 extern int num_vars; 
-extern int last_command_up;              // Number of variables currently stored
+extern int last_command_up;
+
+extern char *history[PATH_MAX];
+extern int history_count;
+extern int current_history;
+
 // struct Func global_funcs[MAX_FUNCS];
 // int num_funcs = 0;
 
@@ -63,10 +81,11 @@ int PSH_LOOP(void);
 // execute.c functions
 char **PSH_TOKENIZER(char *);
 int PSH_EXEC_EXTERNAL(char **);
-void handle_input(char **, size_t *);
+void handle_input(char **, size_t *, const char *);
 void save_history(const char *, const char*);
 void process_commands(char *, int *);
 void execute_command(char **, int *);
+int kbhit();
 
 // helper functions
 void free_double_pointer(char **array);
@@ -95,5 +114,11 @@ void generate_session_id();
 void initialize_paths(const char *);
 void get_session_path(char *, size_t, const char *);
 void initialize_shell(const char *);
+void print_prompt(const char *);
+void load_history();
+void free_history();
+void enableRawMode();
+void disableRawMode();
+char *trim_whitespace(char *);
 
 #endif
