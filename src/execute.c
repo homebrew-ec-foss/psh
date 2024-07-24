@@ -308,8 +308,8 @@ void save_history(const char *inputline, const char* path_session)
     else
     {
         // timestamp = time(NULL);
-        fprintf(fp_memory, "%s %s\n", session_id, inputline);
-        fprintf(fp_session, "%s %s\n", session_id, inputline);
+        fprintf(fp_memory, "%s\n", inputline);
+        fprintf(fp_session, "%s\n", inputline);
         fclose(fp_memory);
         fclose(fp_session);
     }
