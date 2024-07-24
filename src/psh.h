@@ -114,5 +114,10 @@ void delete_alias(HashMap *, const char *);
 Alias *find(HashMap *, const char *);
 const char *get_alias_command(HashMap *, const char *);
 void replace_alias(HashMap *, char **);
+void generate_session_id();
+void initialize_paths(const char *);
+void get_session_path(char *, size_t, const char *);
+void initialize_shell(const char *);
+
 
 #endif
