@@ -1,50 +1,13 @@
 #include "psh.h"
 char path_memory[PATH_MAX]="";
 int last_command_up = 0;
+char session_id[32];
+
+char *history[PATH_MAX];
+int history_count = 0;
+int current_history = -1;
 
 // Helper function to split the input line by ';'
-
-/*char **split_commands(char *input)
-{
-    size_t bufsize = 64, position = 0;
-    char **commands = malloc(bufsize * sizeof(char *));
-    char *command;
-
-    if (!commands)
-    {
-        fprintf(stderr, "psh: allocation error\n");
-        exit(EXIT_FAILURE);
-    }
-
-    command = strtok(input, ";");
-    while (command != NULL)
-    {
-        commands[position] = malloc((strlen(command) + 1) * sizeof(char));
-        if (!commands[position])
-        {
-            fprintf(stderr, "psh: allocation error\n");
-            exit(EXIT_FAILURE);
-        }
-        strcpy(commands[position], command);
-        position++;
-
-        if (position >= bufsize)
-        {
-            bufsize += 64;
-            commands = realloc(commands, bufsize * sizeof(char *));
-            if (!commands)
-            {
-                fprintf(stderr, "psh: allocation error\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-
-        command = strtok(NULL, ";");
-    }
-    commands[position] = NULL;
-    return commands;
-}*/
-
 char **split_commands(char *input)
 {
     size_t bufsize = 64, position = 0;
@@ -231,88 +194,155 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
     return 1;
 }
 
-void handle_input(char **inputline, size_t *n)
-{
-    char last_component[PATH_MAX];
-    get_last_path_component(PATH, last_component);
-
-    if (strcmp(PATH, "/") == 0)
-    {
-        printf("%s@PSH → %s $ ", getenv("USER"), "/");
-    }
-    else
-    {
-        printf("%s@PSH → %s $ ", getenv("USER"), last_component);
+void handle_input(char **inputline, size_t *n, const char *PATH) {
+    if (history_count == 0) {
+        load_history();
     }
 
+    print_prompt(PATH);
 
-    // handling UP arrow 
-    char c;
-    // FILE *fd = fopen("/.files/MEMORY_HISTORY_FILE", "r");
-     if ((c = getchar()) == '\033') {
-      char next = getchar();
-      if (next == '[') {
-        char arrow = getchar();
-        if (arrow == 'A') {
-        // Up arrow detected
-        //   printf("Up Arrow\n");  
-          printf("\033[2K\r");
-
-        // now we need to get the previous command executed from HISTORY_FILE
-        // printf("code is coming here\n");
-          get_last_line(inputline);
-          printf("\033[2K\r");
-        // continue;  // Skip the rest of the loop and prompt again
-        }
-      }
-      ungetc(c, stdin);  // Put back the character if it's not an arrow sequence
-    } else {
-      ungetc(c, stdin);  // Put back the character for getline to read
-    }
-
-    if (getline(inputline, n, stdin) == -1)
-    {
-        perror("getline");
+    *n = 0;
+    if (*inputline != NULL) {
         free(*inputline);
+        *inputline = NULL;
+    }
+
+    enableRawMode();
+
+    char buffer[PATH_MAX] = {0};
+    size_t pos = 0;
+    size_t cursor = 0;
+    current_history = -1;
+
+
+    while (1) {
+        if (kbhit()) {
+            char ch = getchar();
+            if (ch == '\033') { // ESC character
+                getchar(); // skip the [
+                ch = getchar();
+                if (ch == ARROW_UP || ch == ARROW_DOWN) {
+                    if (ch == ARROW_UP && current_history < history_count - 1) {
+                        current_history++;
+                    } else if (ch == ARROW_DOWN && current_history > -1) {
+                        current_history--;
+                    }
+                    
+                    if (current_history >= 0) {
+                        strncpy(buffer, history[history_count - 1 - current_history], MAX_LINE_LENGTH - 1);
+                        buffer[MAX_LINE_LENGTH - 1] = '\0';
+                        pos = strlen(buffer);
+                        cursor = pos;
+                    } else {
+                        buffer[0] = '\0';
+                        pos = 0;
+                        cursor = 0;
+                    }
+                    
+                    printf("\r\033[K"); // Clear the current line
+                    print_prompt(PATH);
+                    printf("%s", buffer);
+                    fflush(stdout);
+                
+                } else if (ch == ARROW_LEFT) {
+                    if (cursor > 0) {
+                        cursor--;
+                        printf("\b");
+                        fflush(stdout);
+                    }
+                } else if (ch == ARROW_RIGHT) {
+                    if (cursor < pos) {
+                        printf("%c", buffer[cursor]);
+                        cursor++;
+                        fflush(stdout);
+                    }
+                }
+            } else if (ch == BACKSPACE) {
+                if (cursor > 0) {
+                    memmove(&buffer[cursor-1], &buffer[cursor], pos - cursor + 1);
+                    pos--;
+                    cursor--;
+                    printf("\b\033[K%s", &buffer[cursor]);
+                    for (size_t i = pos; i > cursor; i--) {
+                        printf("\b");
+                    }
+                    fflush(stdout);
+                }
+            } else if (ch == '\n') {
+                buffer[pos] = '\0';
+                printf("\n");
+                break;
+            } else {
+                if (pos < MAX_LINE_LENGTH - 1) {
+                    memmove(&buffer[cursor+1], &buffer[cursor], pos - cursor + 1);
+                    buffer[cursor] = ch;
+                    pos++;
+                    printf("%s", &buffer[cursor]);
+                    cursor++;
+                    for (size_t i = pos; i > cursor; i--) {
+                        printf("\b");
+                    }
+                    fflush(stdout);
+                }
+            }
+        }
+    }
+    disableRawMode();
+    char *trimmed_input = trim_whitespace(buffer);
+    *inputline = strdup(trimmed_input);
+    if (*inputline == NULL) {
+        perror("Memory allocation failed");
         exit(EXIT_FAILURE);
     }
-
-    (*inputline)[strcspn(*inputline, "\n")] = '\0';
+    *n = strlen(*inputline);
 
     char *comment_pos = strchr(*inputline, '#');
-    if (comment_pos)
-    {
+    if (comment_pos) {
         *comment_pos = '\0';
+    }
+
+    if (strlen(*inputline) > 0) {
+        if (history_count == PATH_MAX) {
+            free(history[0]);
+            for (int i = 1; i < PATH_MAX; i++) {
+                history[i-1] = history[i];
+            }
+            history_count--;
+        }
+        history[history_count] = strdup(*inputline);
+        if (history[history_count] == NULL) {
+            perror("Memory allocation failed");
+            exit(EXIT_FAILURE);
+        }
+        history_count++;
     }
 }
 
-void save_history(const char *inputline)
+void save_history(const char *inputline, const char* path_session)
 {
-    FILE *fp1, *fp2;
-    
-   
-    fp1 = fopen(path_memory, "a");
+    FILE *fp_memory, *fp_session;
+    time_t timestamp;
 
-    char path_session[PATH_MAX];
-    strcpy(path_session, cwd);
-    strcat(path_session, "/.files/SESSION_HISTORY_FILE");
-    fp2 = fopen(path_session, "a");
+    fp_memory = fopen(path_memory, "a");
 
-    if (fp1 == NULL || fp2 == NULL)
+    fp_session = fopen(path_session, "a");
+
+    if (fp_memory == NULL || fp_session == NULL)
     {
         perror("Error:");
-        if (fp1)
-            fclose(fp1);
-        if (fp2)
-            fclose(fp2);
+        if (fp_memory)
+            fclose(fp_memory);
+        if (fp_session)
+            fclose(fp_session);
         exit(EXIT_FAILURE);
     }
     else
     {
-        fprintf(fp1, "%s\n", inputline);
-        fprintf(fp2, "%s\n", inputline);
-        fclose(fp1);
-        fclose(fp2);
+        // timestamp = time(NULL);
+        fprintf(fp_memory, "%s\n", inputline);
+        fprintf(fp_session, "%s\n", inputline);
+        fclose(fp_memory);
+        fclose(fp_session);
     }
 }
 
@@ -325,6 +355,12 @@ void process_commands(char *inputline, int *run){
 
         if (token_arr[0] != NULL)
         {
+            if(!strcmp(token_arr[0],"exit"))
+            {
+                free(inputline);
+                free_double_pointer(commands);
+                free_history();
+            }
             execute_command(token_arr, run);
         }
 
@@ -334,7 +370,10 @@ void process_commands(char *inputline, int *run){
     free_double_pointer(commands);
 }
 
-void execute_command(char **token_arr, int *run)
+// gotta resolve this part
+// HashMap is not referenced
+
+/*void execute_command(char **token_arr, int *run)
 {
     HashMap *map = create_map(HASHMAP_SIZE);
     char ALIAS[PATH_MAX];
@@ -346,7 +385,8 @@ void execute_command(char **token_arr, int *run)
     }
     snprintf(ALIAS, sizeof(ALIAS), "%s/.files/ALIAS", path_memory);
     load_aliases(map, ALIAS);
-    
+*/    
+void execute_command(char **token_arr, int *run){
     if (strchr(token_arr[0], '='))
     {
         char *var_name = strtok(token_arr[0], "=");

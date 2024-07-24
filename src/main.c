@@ -1,10 +1,11 @@
 // main.c
 #include "psh.h"
-#include <stdio.h>
 
 // Unused Parameters
 int main(int argc, char **argv, char **envp)
 {
+
+    printf("\e[1;1H\e[2J"); // basically clears the screen
     printf("Welcome to psh!\n");
 
     if (argc == 2)
@@ -15,8 +16,11 @@ int main(int argc, char **argv, char **envp)
     {
         getcwd(cwd, sizeof(cwd)); // home/$USER/psh
         strcpy(PATH, cwd);
+        initialize_shell(cwd);
         return PSH_LOOP();
     }
+    free_history();
+    return 0;
 }
 
 int PSH_LOOP(void)
@@ -29,20 +33,15 @@ int PSH_LOOP(void)
 
     while (run == 1)
     {
-        handle_input(&inputline, &n);
+        handle_input(&inputline, &n, PATH);
         if (inputline[0] == '\0')
         {
             continue;
         }
-        save_history(inputline);
-        if (last_command_up == 0) {
-            process_commands(inputline, &run);
-        }
-        else {
-            last_command_up = 0;
-        }
-        // continue;
-        
+        char path_session[PATH_MAX];
+        get_session_path(path_session, sizeof(path_session), cwd);
+        save_history(inputline,path_session);
+        process_commands(inputline, &run);
     }
     free(inputline);
     return run;
