@@ -1,7 +1,7 @@
 // helpers.c
 #include "psh.h"
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 // char path_memory[PATH_MAX];
 
 void free_double_pointer(char **array)
@@ -612,6 +612,8 @@ void get_last_line(char **inputline) {
 
 void generate_session_id() {
     snprintf(session_id, sizeof(session_id), "%ld", (long)time(NULL));
+    // printf("%s",session_id);
+    setenv("SESSIONID", session_id, 1);
 }
 
 void initialize_paths(const char *cwd) {
