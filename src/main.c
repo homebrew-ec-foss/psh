@@ -49,6 +49,7 @@ int PSH_LOOP(void)
 
 int PSH_SCRIPT(const char *file)
 {
+
     FILE *script = fopen(file, "r");
 
     int run = 1;
@@ -62,6 +63,7 @@ int PSH_SCRIPT(const char *file)
         run = 0;
         return -1;
     }
+
     while (run == 1)
     {
         if (getline(&inputline, &n, script) == -1)

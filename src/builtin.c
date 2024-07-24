@@ -1322,6 +1322,5 @@ int PSH_UNALIAS(char **token_arr)
     // Free memory
     free_map(map);
 
-    
     return 1;
 }

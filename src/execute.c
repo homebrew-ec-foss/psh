@@ -370,11 +370,7 @@ void process_commands(char *inputline, int *run){
     free_double_pointer(commands);
 }
 
-// gotta resolve this part
-// HashMap is not referenced
-
-/*void execute_command(char **token_arr, int *run)
-{
+void execute_command(char **token_arr, int *run){
     HashMap *map = create_map(HASHMAP_SIZE);
     char ALIAS[PATH_MAX];
     char path_memory[PATH_MAX];
@@ -385,8 +381,7 @@ void process_commands(char *inputline, int *run){
     }
     snprintf(ALIAS, sizeof(ALIAS), "%s/.files/ALIAS", path_memory);
     load_aliases(map, ALIAS);
-*/    
-void execute_command(char **token_arr, int *run){
+
     if (strchr(token_arr[0], '='))
     {
         char *var_name = strtok(token_arr[0], "=");
@@ -405,6 +400,7 @@ void execute_command(char **token_arr, int *run){
             return;
         }
     }
+
     if (find(map, token_arr[0]))
     {
         replace_alias(map, token_arr);

@@ -727,43 +727,9 @@ void get_session_path(char *path_session, size_t size, const char *cwd) {
     snprintf(path_session, size, "%s/.files/SESSION_HISTORY_FILE_%s", cwd, session_id);
 }
 
-a
-last_command_up = 1;
-//   printf("entering getlastline\n");
-  FILE *fp1 = fopen(path_memory, "r");
-
-  if (fp1 == NULL) {
-    perror("Error opening file");
-    return;
-  }
-
-  char line[MAX_LINE_LENGTH] = "";
-  char lastLine[MAX_LINE_LENGTH] = "";
-  char secondLastLine[MAX_LINE_LENGTH] = "";
-  // char thirdLastLine[MAX_LINE_LENGTH] = "";
-
-//   printf("path is %s\n", path_memory);
-
-  // Read each line and store the last one in lastLine
-  while (fgets(line, sizeof(line), fp1)) {
-    // strcpy(thirdLastLine,secondLastLine);
-    strcpy(secondLastLine, lastLine);
-    strcpy(lastLine, line);
-  }
-
-  //   printf("testt\n");
-  //   Close the file
-  system(lastLine);  // fix this later on
-  
-//   strcpy(*inputline, lastLine);
-//   printf("last linee : %s\n",*inputline);
-
-//   last_command_up = 0;
-  fclose(fp1);
-
-  // Print the last line
-  // printf("Last command: %s\n", lastLine);
-  // fflush(stdin);
+void initialize_shell(const char *cwd) {
+    generate_session_id();
+    initialize_paths(cwd);
 }
 
 unsigned int hash(const char *str, int size)
@@ -858,7 +824,7 @@ void load_aliases(HashMap *map, const char *filepath)
             perror("Failed to create ALIAS file\n");
             free(map->buckets);
             free(map);
-            return -1;
+            //return -1;
         }
         fclose(fp);
         fp = fopen(filepath, "r");
@@ -971,23 +937,4 @@ void replace_alias(HashMap *map, char **token_arr)
     {
         token_arr[0] = strdup(command);
     }
-}
-
-void generate_session_id() {
-    snprintf(session_id, sizeof(session_id), "%ld", (long)time(NULL));
-    // printf("%s",session_id);
-    setenv("SESSIONID", session_id, 1);
-}
-
-void initialize_paths(const char *cwd) {
-    snprintf(path_memory, sizeof(path_memory), "%s/.files/MEMORY_HISTORY_FILE", cwd);
-}
-
-void get_session_path(char *path_session, size_t size, const char *cwd) {
-    snprintf(path_session, size, "%s/.files/SESSION_HISTORY_FILE_%s", cwd, session_id);
-}
-
-void initialize_shell(const char *cwd) {
-    generate_session_id();
-    initialize_paths(cwd);
 }

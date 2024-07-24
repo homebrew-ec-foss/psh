@@ -23,6 +23,7 @@
 #include <termios.h>
 #include <ctype.h>
 
+
 #define MAX_VARS 100
 #define PATH_MAX 4096
 #define ARROW_UP 'A'
@@ -31,6 +32,7 @@
 #define ARROW_RIGHT 'C'
 #define MAX_LINE_LENGTH 1024
 #define BACKSPACE 127
+#define HASHMAP_SIZE 256
 
 // #define MAX_FUNCS 100
 
@@ -46,6 +48,20 @@ struct Variable
 //     char func_def[1024];
 // };
 
+typedef struct Alias 
+{
+    char *name;
+    char *command;
+    struct Alias *next; 
+} Alias;
+
+typedef struct HashMap
+{
+    Alias **buckets;
+    int size;
+} HashMap;
+
+
 // Global Variables
 extern char cwd[PATH_MAX];
 extern char *builtin_str[];
@@ -55,6 +71,7 @@ extern char PREV_DIR[PATH_MAX];
 extern char PATH[PATH_MAX];
 extern char path_memory[PATH_MAX];
 extern char session_id[32];
+
 extern int last_command_up;
 extern char path_memory[];
 
