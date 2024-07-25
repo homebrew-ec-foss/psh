@@ -1,9 +1,7 @@
 // helpers.c
 #include "psh.h"
-#include <stdio.h>
 // char path_memory[PATH_MAX];
-int color_checker = 1;
-char *color_value = NULL;
+
 
 void free_double_pointer(char **array)
 {
@@ -603,49 +601,68 @@ void get_last_line(char **inputline) {
     }
 }
 
-void print_prompt(const char *PATH) {
-
-    // const char *user_color = getenv("") ? getenv("PS1_COLOR") : "\033[0m";
-    // const char *color=red;
-
-    // const char *red = "\033[1;31m";
-    // const char *green = "\033[1;32m";
-    // const char *yellow = "\033[1;33m";
-    // const char *blue = "\033[1;34m";
-    // const char *magenta = "\033[1;35m";
-    // const char *cyan = "\033[1;36m";
-    // const char *white = "\033[1;37m";
-    // const char *black = "\033[0;30m";
-    // const char *gray = "\033[0;37m";
-    // const char *reset = "\033[0m";
-
-    // setenv("red", "\033[1;31m", 1);
-    // setenv("green", "\033[1;32m", 1);
-    // setenv("yellow", "\033[1;33m", 1);
-    // setenv("blue", "\033[1;34m", 1);
-    // setenv("magenta", "\033[1;35m", 1);
-    // setenv("cyan", "\033[1;36m", 1);
-    // setenv("white", "\033[1;37m", 1);
-    // setenv("black", "\033[0;30m", 1);
-    // setenv("gray", "\033[0;37m", 1);
-    // setenv("reset", "\033[0m", 1);
-
-    // printf("%sthisisredd\n",getenv("yellow"));
-    // printf("%scolor\n", color);
-
-    char last_component[PATH_MAX];
-    get_last_path_component(PATH, last_component);
-
-    if (strcmp(PATH, "/") == 0) {
-        printf("%s@PSH → %s $ ", getenv("USER"), "/");
-    } else {
-        // printf("%s@PSH → %s $ ", getenv("USER"), last_component);
-        const char *color=color_value;
-        printf("%s%s%s@%sPSH%s → %s%s%s$ ", color, getenv("USER"), reset, yellow, reset, blue, last_component, reset);
-        
-
+void parse_ps1(const char *ps1, const char *cwd) {
+    char expanded[2048] = "";
+    char *exp_ptr = expanded;
+    
+    while (*ps1) {
+        if (*ps1 == '\\') {
+            ps1++;
+            switch (*ps1) {
+                case 'u':
+                    exp_ptr += sprintf(exp_ptr, "%s", getenv("USER"));
+                    break;
+                case 'h':
+                    {
+                        char hostname[256];
+                        gethostname(hostname, sizeof(hostname));
+                        exp_ptr += sprintf(exp_ptr, "%s", hostname);
+                    }
+                    break;
+                case 'w':
+                    exp_ptr += sprintf(exp_ptr, "%s", cwd);
+                    break;
+                case 'W':
+                    {
+                        char *last_slash = strrchr(cwd, '/');
+                        exp_ptr += sprintf(exp_ptr, "%s", last_slash ? last_slash + 1 : cwd);
+                    }
+                    break;
+                case '$':
+                    exp_ptr += sprintf(exp_ptr, "%s", getuid() == 0 ? "#" : "$");
+                    break;
+                case '[':
+                case ']':
+                    // Ignore these characters as they're used for bash prompt escaping
+                    break;
+                case 'e':
+                    *exp_ptr++ = '\033';  // ESC character
+                    break;
+                default:
+                    *exp_ptr++ = '\\';
+                    *exp_ptr++ = *ps1;
+            }
+        } else if (*ps1 == '\033') {
+            // If we encounter an ESC character directly, copy it
+            *exp_ptr++ = *ps1;
+        } else {
+            *exp_ptr++ = *ps1;
+        }
+        ps1++;
     }
+    *exp_ptr = '\0';
+    
+    printf("%s", expanded);
     fflush(stdout);
+}
+
+void print_prompt(const char *PATH) {
+    char *ps1 = getenv("PS1");
+    if (ps1 == NULL) {
+        // New default PS1
+        ps1 = "\\[\\e[1;32m\\]\\u\\[\\e[0m\\]@\\[\\e[1;33m\\]PSH\\[\\e[0m\\] → \\[\\e[1;34m\\]\\W\\[\\e[0m\\]$ ";
+    }
+    parse_ps1(ps1, PATH);
 }
 
 void load_history() {
@@ -975,63 +992,68 @@ void replace_alias(HashMap *map, char **token_arr)
     }
 }
 
-
-
-bool color_check(const char *color_name, const char *color_value) {
-    printf("Entered color_check\n");
-
-    // debugging
-    // printf("Color name: %s\n", color_name);
-    // printf("Color value: %s\n", color_value);
-
-    if (color_value == NULL) {
-        return false;
-    } else {
-        return true;
+char *remove_quotes(char *str) {
+    size_t len = strlen(str);
+    if ((str[0] == '"' && str[len - 1] == '"') || (str[0] == '\'' && str[len - 1] == '\'')) {
+        str[len - 1] = '\0';
+        return str + 1;
     }
+    return str;
 }
 
-void change_color(const char *color_name, const char *color_value) {
-    const char *color;
-    // printf("gotohelllchangecolor\n");
+// Function to expand environment variables within a string
+char *expand_variables(char *str) {
+    static char buffer[1024];
+    char *ptr = str;
+    char *buf_ptr = buffer;
 
-    
-    if (strcmp(color_name, "color") == 0) {
-        if (strcmp(color_value, "red") == 0) {
-            setenv("color", "\033[1;31m", 1);
-            color = "\033[1;31m";
-            printf("Red part entered\n");
-            printf("%sThis should be red\n", color);
-        } else if (strcmp(color_value, "green") == 0) {
-            setenv("color", "\033[1;32m", 1);
-            color = "\033[1;32m";
-            printf("Green part entered\n");
-            printf("%sThis should be green\n", color);
-        } else if (strcmp(color_value, "yellow") == 0) {
-            setenv("color", "\033[1;33m", 1);
-            color = "\033[1;33m";
-            printf("Yellow part entered\n");
-            printf("%sThis should be yellow\n", color);
-        } else if (strcmp(color_value, "blue") == 0) {
-            setenv("color", "\033[1;34m", 1);
-            color = "\033[1;34m";
-            printf("Blue part entered\n");
-            printf("%sThis should be blue\n", color);
-        } else if (strcmp(color_value, "magenta") == 0) {
-            setenv("color", "\033[1;35m", 1);
-            color = "\033[1;35m";
-            printf("Magenta part entered\n");
-            printf("%sThis should be magenta\n", color);
-        } else if (strcmp(color_value, "cyan") == 0) {
-            setenv("color", "\033[1;36m", 1);
-            color = "\033[1;36m";
-            printf("Cyan part entered\n");
-            printf("%sThis should be cyan\n", color);
-        } else if (strcmp(color_value, "white") == 0) {
-            setenv("color", "\033[1;37m", 1);
-            color = "\033[1;37m";
-            printf("White part entered\n");
-            printf("%sThis should be white\n", color);
+    while (*ptr) {
+        if (*ptr == '$') {
+            ptr++;
+            char var_name[256];
+            char *var_ptr = var_name;
+
+            while (*ptr && (isalnum(*ptr) || *ptr == '_')) {
+                *var_ptr++ = *ptr++;
+            }
+            *var_ptr = '\0';
+
+            char *var_value = getenv(var_name);
+            if (var_value) {
+                while (*var_value) {
+                    *buf_ptr++ = *var_value++;
+                }
+            }
+        } else {
+            *buf_ptr++ = *ptr++;
         }
+    }
+    *buf_ptr = '\0';
+    return buffer;
+}
+
+void handle_env_variable(char *token_arr[]) {
+    if (strchr(token_arr[0], '=')) {
+        char *input = strdup(token_arr[0]);
+        if (input == NULL) {
+            perror("strdup");
+            return;
+        }
+
+        char *var_name = strtok(input, "=");
+        char *var_value = strtok(NULL, "=");
+
+        if (var_name && var_value) {
+            var_value = remove_quotes(var_value);
+            var_value = expand_variables(var_value);
+
+            if (setenv(var_name, var_value, 1) != 0) {
+                perror("setenv");
+            }
+        } else {
+            fprintf(stderr, "Error: Invalid environment variable assignment\n");
+        }
+
+        free(input);
     }
 }

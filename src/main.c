@@ -2,16 +2,16 @@
 #include "psh.h"
 
 
-const char *red = "\033[1;31m";
-const char *green = "\033[1;32m";
-const char *yellow = "\033[1;33m";
-const char *blue = "\033[1;34m";
-const char *magenta = "\033[1;35m";
-const char *cyan = "\033[1;36m";
-const char *white = "\033[1;37m";
-const char *black = "\033[0;30m";
-const char *gray = "\033[0;37m";
-const char *reset = "\033[0m";
+// const char *red = "\033[1;31m";
+// const char *green = "\033[1;32m";
+// const char *yellow = "\033[1;33m";
+// const char *blue = "\033[1;34m";
+// const char *magenta = "\033[1;35m";
+// const char *cyan = "\033[1;36m";
+// const char *white = "\033[1;37m";
+// const char *black = "\033[0;30m";
+// const char *gray = "\033[0;37m";
+// const char *reset = "\033[0m";
 
 
 
@@ -22,7 +22,9 @@ int main(int argc, char **argv, char **envp)
 
     printf("\e[1;1H\e[2J"); // basically clears the screen
     printf("Welcome to psh!\n");
-    
+    getcwd(cwd, sizeof(cwd)); // home/$USER/psh
+    strcpy(PATH, cwd);
+    //add a PSH_SCRIPT call to load pshrc
 
     if (argc == 2)
     {
@@ -30,8 +32,6 @@ int main(int argc, char **argv, char **envp)
     }
     else
     {
-        getcwd(cwd, sizeof(cwd)); // home/$USER/psh
-        strcpy(PATH, cwd);
         initialize_shell(cwd);
         return PSH_LOOP();
     }

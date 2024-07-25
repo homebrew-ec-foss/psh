@@ -30,6 +30,17 @@
 #define ARROW_DOWN 'B'
 #define ARROW_LEFT 'D'
 #define ARROW_RIGHT 'C'
+#include <fcntl.h>
+#include <termios.h>
+#include <ctype.h>
+
+
+#define MAX_VARS 100
+#define PATH_MAX 4096
+#define ARROW_UP 'A'
+#define ARROW_DOWN 'B'
+#define ARROW_LEFT 'D'
+#define ARROW_RIGHT 'C'
 #define MAX_LINE_LENGTH 1024
 #define BACKSPACE 127
 #define HASHMAP_SIZE 256
@@ -163,7 +174,9 @@ void free_history();
 void enableRawMode();
 void disableRawMode();
 char *trim_whitespace(char *);
-bool color_check(const char *, const char *);
-void change_color(const char *, const char *); 
+void parse_ps1(const char *, const char *);
+char *remove_quotes(char *);
+char *expand_variables(char *);
+void handle_env_variable(char *[]);
 
 #endif

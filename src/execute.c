@@ -6,29 +6,33 @@ char session_id[32];
 char *history[PATH_MAX];
 int history_count = 0;
 int current_history = -1;
-char *color;
 
 // Helper function to split the input line by ';'
-char **split_commands(char *input)
-{
-    size_t bufsize = 64, position = 0;
+char **split_commands(char *input) {
+    size_t bufsize = 64;
+    size_t position = 0;
     char **commands = malloc(bufsize * sizeof(char *));
     char *command_start = input;
-    int in_for_loop = 0;
+    int in_single_quote = 0;
+    int in_double_quote = 0;
 
-    if (!commands)
-    {
+    if (!commands) {
         fprintf(stderr, "psh: allocation error\n");
         exit(EXIT_FAILURE);
     }
 
-    for (char *c = input; *c != '\0'; c++)
-    {
-        if (!in_for_loop && *c == ';')
-        {
+    for (char *c = input; *c != '\0'; c++) {
+        // Handle quotes
+        if (*c == '\'' && !in_double_quote) {
+            in_single_quote = !in_single_quote;
+        } else if (*c == '\"' && !in_single_quote) {
+            in_double_quote = !in_double_quote;
+        }
+        
+        // Handle end of command
+        if (!in_single_quote && !in_double_quote && *c == ';') {
             commands[position] = malloc((c - command_start + 1) * sizeof(char));
-            if (!commands[position])
-            {
+            if (!commands[position]) {
                 fprintf(stderr, "psh: allocation error\n");
                 exit(EXIT_FAILURE);
             }
@@ -36,12 +40,10 @@ char **split_commands(char *input)
             commands[position][c - command_start] = '\0';
             position++;
 
-            if (position >= bufsize)
-            {
+            if (position >= bufsize) {
                 bufsize += 64;
                 commands = realloc(commands, bufsize * sizeof(char *));
-                if (!commands)
-                {
+                if (!commands) {
                     fprintf(stderr, "psh: allocation error\n");
                     exit(EXIT_FAILURE);
                 }
@@ -49,22 +51,12 @@ char **split_commands(char *input)
 
             command_start = c + 1;
         }
-        else if (strncmp(c, "for ", 4) == 0)
-        {
-            in_for_loop++;
-        }
-        else if (in_for_loop && strncmp(c, "done", 4) == 0)
-        {
-            in_for_loop--;
-            c += 3; // Move past "done"
-        }
     }
 
-    if (command_start != input + strlen(input))
-    {
+    // Handle the last command
+    if (command_start != input + strlen(input)) {
         commands[position] = strdup(command_start);
-        if (!commands[position])
-        {
+        if (!commands[position]) {
             fprintf(stderr, "psh: allocation error\n");
             exit(EXIT_FAILURE);
         }
@@ -74,7 +66,6 @@ char **split_commands(char *input)
     commands[position] = NULL;
     return commands;
 }
-
 char **PSH_TOKENIZER(char *line)
 {
     size_t bufsize = 64, position = 0, i;
@@ -200,7 +191,6 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
         load_history();
     }
 
-    color = red;
     print_prompt(PATH);
 
     *n = 0;
@@ -387,26 +377,17 @@ void execute_command(char **token_arr, int *run){
     snprintf(ALIAS, sizeof(ALIAS), "%s/.files/ALIAS", path_memory);
     load_aliases(map, ALIAS);
 
-    if (strchr(token_arr[0], '='))
-    {
-        char *var_name = strtok(token_arr[0], "=");
-        char *var_value = strtok(NULL, "=");
-
-        if (var_value != NULL)
-        {
-            setenv(var_name, var_value, 1);
-            if (color_check(var_name,var_value)) {
-                change_color(var_name,var_value);
-            }
-            return;
-        }
-    }
 
     if (find(map, token_arr[0]))
     {
         replace_alias(map, token_arr);
     }
     free_map(map);
+    if (strchr(token_arr[0], '='))
+    {
+        handle_env_variable(token_arr);
+        return;
+    }
     for (int j = 0; j < size_builtin_str; j++)
     {
         if (strcmp(token_arr[0], builtin_str[j]) == 0)
