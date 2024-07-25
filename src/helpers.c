@@ -607,7 +607,8 @@ void print_prompt(const char *PATH) {
     if (strcmp(PATH, "/") == 0) {
         printf("%s@PSH → %s $ ", getenv("USER"), "/");
     } else {
-        printf("%s@PSH → %s $ ", getenv("USER"), last_component);
+        // printf("%s@PSH → %s $ ", getenv("USER"), last_component);
+        printf("%s%s%s@%sPSH%s → %s%s%s$ ", red,getenv("USER"),reset,yellow,reset,blue,last_component,reset); // format is color, string, reset
     }
     fflush(stdout);
 }

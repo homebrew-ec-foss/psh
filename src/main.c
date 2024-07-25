@@ -1,6 +1,24 @@
 // main.c
 #include "psh.h"
 
+
+const char *red = "\033[1;31m";
+const char *green = "\033[1;32m";
+const char *yellow = "\033[1;33m";
+const char *blue = "\033[1;34m";
+const char *magenta = "\033[1;35m";
+const char *cyan = "\033[1;36m";
+const char *white = "\033[1;37m";
+const char *black = "\033[0;30m";
+const char *gray = "\033[0;37m";
+const char *light_red = "\033[1;31m";
+const char *light_green = "\033[1;32m";
+const char *light_yellow = "\033[1;33m";
+const char *light_blue = "\033[1;34m";
+const char *light_magenta = "\033[1;35m";
+const char *light_cyan = "\033[1;36m";
+const char *reset = "\033[0m";
+
 // Unused Parameters
 int main(int argc, char **argv, char **envp)
 {
