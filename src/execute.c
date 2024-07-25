@@ -6,6 +6,7 @@ char session_id[32];
 char *history[PATH_MAX];
 int history_count = 0;
 int current_history = -1;
+char *color;
 
 // Helper function to split the input line by ';'
 char **split_commands(char *input)
@@ -199,6 +200,7 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
         load_history();
     }
 
+    color = red;
     print_prompt(PATH);
 
     *n = 0;
@@ -361,6 +363,9 @@ void process_commands(char *inputline, int *run){
                 free_double_pointer(commands);
                 free_history();
             }
+
+            // color_check(token_arr);
+            
             execute_command(token_arr, run);
         }
 
@@ -389,14 +394,10 @@ void execute_command(char **token_arr, int *run){
 
         if (var_value != NULL)
         {
-            // if (num_vars < MAX_VARS) {
-            //     strcpy(global_vars[num_vars].var_name, var_name);
-            //     strcpy(global_vars[num_vars].var_value, var_value);
-            //     num_vars++;
-            // } else {
-            //     fprintf(stderr, "PSH: Invalid variable assignment\n");
-            // }
             setenv(var_name, var_value, 1);
+            if (color_check(var_name,var_value)) {
+                change_color(var_name,var_value);
+            }
             return;
         }
     }
@@ -415,6 +416,7 @@ void execute_command(char **token_arr, int *run){
             return;
         }
     }
+
 
     if (!contains_wildcard(token_arr))
     {

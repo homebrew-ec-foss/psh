@@ -11,20 +11,18 @@ const char *cyan = "\033[1;36m";
 const char *white = "\033[1;37m";
 const char *black = "\033[0;30m";
 const char *gray = "\033[0;37m";
-const char *light_red = "\033[1;31m";
-const char *light_green = "\033[1;32m";
-const char *light_yellow = "\033[1;33m";
-const char *light_blue = "\033[1;34m";
-const char *light_magenta = "\033[1;35m";
-const char *light_cyan = "\033[1;36m";
 const char *reset = "\033[0m";
+
+
 
 // Unused Parameters
 int main(int argc, char **argv, char **envp)
 {
+    // setenv("PS1_COLOR", "\033[0m", 1); // Set default color to reset
 
     printf("\e[1;1H\e[2J"); // basically clears the screen
     printf("Welcome to psh!\n");
+    
 
     if (argc == 2)
     {

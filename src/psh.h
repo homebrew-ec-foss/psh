@@ -61,6 +61,7 @@ typedef struct HashMap
     int size;
 } HashMap;
 
+// extern char **token_arr;
 
 // Global Variables
 extern char cwd[PATH_MAX];
@@ -89,7 +90,16 @@ extern const char *yellow;
 extern const char *blue;
 extern const char *magenta;
 extern const char *cyan;
-extern const char *reset; 
+extern const char *white;
+extern const char *reset;
+extern const char *gray;
+
+extern int color_checker;
+extern const char *color_code; //= "\033[0m";  // Default to reset color
+extern char *color;
+extern char *color_value;
+
+
 // struct Func global_funcs[MAX_FUNCS];
 // int num_funcs = 0;
 
@@ -153,5 +163,7 @@ void free_history();
 void enableRawMode();
 void disableRawMode();
 char *trim_whitespace(char *);
+bool color_check(const char *, const char *);
+void change_color(const char *, const char *); 
 
 #endif

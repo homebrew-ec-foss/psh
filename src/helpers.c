@@ -1,6 +1,9 @@
 // helpers.c
 #include "psh.h"
+#include <stdio.h>
 // char path_memory[PATH_MAX];
+int color_checker = 1;
+char *color_value = NULL;
 
 void free_double_pointer(char **array)
 {
@@ -601,6 +604,35 @@ void get_last_line(char **inputline) {
 }
 
 void print_prompt(const char *PATH) {
+
+    // const char *user_color = getenv("") ? getenv("PS1_COLOR") : "\033[0m";
+    // const char *color=red;
+
+    // const char *red = "\033[1;31m";
+    // const char *green = "\033[1;32m";
+    // const char *yellow = "\033[1;33m";
+    // const char *blue = "\033[1;34m";
+    // const char *magenta = "\033[1;35m";
+    // const char *cyan = "\033[1;36m";
+    // const char *white = "\033[1;37m";
+    // const char *black = "\033[0;30m";
+    // const char *gray = "\033[0;37m";
+    // const char *reset = "\033[0m";
+
+    // setenv("red", "\033[1;31m", 1);
+    // setenv("green", "\033[1;32m", 1);
+    // setenv("yellow", "\033[1;33m", 1);
+    // setenv("blue", "\033[1;34m", 1);
+    // setenv("magenta", "\033[1;35m", 1);
+    // setenv("cyan", "\033[1;36m", 1);
+    // setenv("white", "\033[1;37m", 1);
+    // setenv("black", "\033[0;30m", 1);
+    // setenv("gray", "\033[0;37m", 1);
+    // setenv("reset", "\033[0m", 1);
+
+    // printf("%sthisisredd\n",getenv("yellow"));
+    // printf("%scolor\n", color);
+
     char last_component[PATH_MAX];
     get_last_path_component(PATH, last_component);
 
@@ -608,7 +640,10 @@ void print_prompt(const char *PATH) {
         printf("%s@PSH → %s $ ", getenv("USER"), "/");
     } else {
         // printf("%s@PSH → %s $ ", getenv("USER"), last_component);
-        printf("%s%s%s@%sPSH%s → %s%s%s$ ", red,getenv("USER"),reset,yellow,reset,blue,last_component,reset); // format is color, string, reset
+        const char *color=color_value;
+        printf("%s%s%s@%sPSH%s → %s%s%s$ ", color, getenv("USER"), reset, yellow, reset, blue, last_component, reset);
+        
+
     }
     fflush(stdout);
 }
@@ -937,5 +972,66 @@ void replace_alias(HashMap *map, char **token_arr)
     if (command) 
     {
         token_arr[0] = strdup(command);
+    }
+}
+
+
+
+bool color_check(const char *color_name, const char *color_value) {
+    printf("Entered color_check\n");
+
+    // debugging
+    // printf("Color name: %s\n", color_name);
+    // printf("Color value: %s\n", color_value);
+
+    if (color_value == NULL) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+void change_color(const char *color_name, const char *color_value) {
+    const char *color;
+    // printf("gotohelllchangecolor\n");
+
+    
+    if (strcmp(color_name, "color") == 0) {
+        if (strcmp(color_value, "red") == 0) {
+            setenv("color", "\033[1;31m", 1);
+            color = "\033[1;31m";
+            printf("Red part entered\n");
+            printf("%sThis should be red\n", color);
+        } else if (strcmp(color_value, "green") == 0) {
+            setenv("color", "\033[1;32m", 1);
+            color = "\033[1;32m";
+            printf("Green part entered\n");
+            printf("%sThis should be green\n", color);
+        } else if (strcmp(color_value, "yellow") == 0) {
+            setenv("color", "\033[1;33m", 1);
+            color = "\033[1;33m";
+            printf("Yellow part entered\n");
+            printf("%sThis should be yellow\n", color);
+        } else if (strcmp(color_value, "blue") == 0) {
+            setenv("color", "\033[1;34m", 1);
+            color = "\033[1;34m";
+            printf("Blue part entered\n");
+            printf("%sThis should be blue\n", color);
+        } else if (strcmp(color_value, "magenta") == 0) {
+            setenv("color", "\033[1;35m", 1);
+            color = "\033[1;35m";
+            printf("Magenta part entered\n");
+            printf("%sThis should be magenta\n", color);
+        } else if (strcmp(color_value, "cyan") == 0) {
+            setenv("color", "\033[1;36m", 1);
+            color = "\033[1;36m";
+            printf("Cyan part entered\n");
+            printf("%sThis should be cyan\n", color);
+        } else if (strcmp(color_value, "white") == 0) {
+            setenv("color", "\033[1;37m", 1);
+            color = "\033[1;37m";
+            printf("White part entered\n");
+            printf("%sThis should be white\n", color);
+        }
     }
 }

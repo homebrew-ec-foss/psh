@@ -1261,24 +1261,24 @@ int PSH_ALIAS(char **token_arr)
                 }
             }
         } 
-        else if (strchr(token_arr[1], '=')) 
+    else if (strchr(token_arr[1], '=')) 
+    {
+        char *name = strtok(token_arr[1], "=");
+        char *command = strtok(NULL, "=");
+        if (command && strchr(command, '\n')) 
         {
-            char *name = strtok(token_arr[1], "=");
-            char *command = strtok(NULL, "=");
-            if (command && strchr(command, '\n')) 
-            {
-                *strchr(command, '\n') = '\0';
-            }
-            if (find(map, name))
-            {
-              delete_alias(map, name);
-            }
-            insert_alias(map, name, command);
-        } 
-        else 
-        {
-            fprintf(stderr, "Unknown option: %s\n", token_arr[1]);
+            *strchr(command, '\n') = '\0';
         }
+        if (find(map, name))
+        {
+            delete_alias(map, name);
+        }
+        insert_alias(map, name, command);
+    } 
+    else 
+    {
+        fprintf(stderr, "Unknown option: %s\n", token_arr[1]);
+    }
     // Save Aliases to file
     save_aliases(map, ALIAS);
 
