@@ -1,16 +1,21 @@
 // main.c
 #include "psh.h"
-
 // Unused Parameters
 int main(int argc, char **argv, char **envp)
 {
     // setenv("PS1_COLOR", "\033[0m", 1); // Set default color to reset
 
-    // printf("\e[1;1H\e[2J"); // basically clears the screen
+    printf("\e[1;1H\e[2J"); // basically clears the screen
     getcwd(cwd, sizeof(cwd)); // home/$USER/psh
     strcpy(PATH, cwd);
+
+    strcat(PATH, "/.files/pshrc");
+    // printf("%s\n",PATH);
+
+
     //add a PSH_SCRIPT call to load pshrc
-    // PSH_SCRIPT("/home/pro696969/psh/.files/pshrc");
+    
+    PSH_SCRIPT(PATH);
 
     if (argc == 2)
     {   
