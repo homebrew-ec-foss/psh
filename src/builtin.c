@@ -1245,6 +1245,7 @@ int PSH_ALIAS(char **token_arr)
         perror("Failed to get current working directory");
         return -1;
     }
+    //printf("%s\n", path_memory);
     snprintf(ALIAS, sizeof(ALIAS), "%s/.files/ALIAS", path_memory);
     // Initializing HashMap
     HashMap *map = create_map(HASHMAP_SIZE);
@@ -1263,8 +1264,13 @@ int PSH_ALIAS(char **token_arr)
         } 
         else if (strchr(token_arr[1], '=')) 
         {
-            char *name = strtok(token_arr[1], "=");
-            char *command = strtok(NULL, "=");
+            char *name = NULL;
+            char *command = NULL;
+            char *delimiter = strchr(token_arr[1], '=');
+            *delimiter = NULL;
+            name = token_arr[1];
+            command = delimiter + 1;
+            //printf("Command: %s\n", command);
             if (command && strchr(command, '\n')) 
             {
                 *strchr(command, '\n') = '\0';

@@ -376,7 +376,7 @@ void execute_command(char **token_arr, int *run){
     char path_memory[PATH_MAX];
     if (!getcwd(path_memory, sizeof(path_memory)))
     {
-        perror("Failed to get current Wworking directory\n");
+        perror("Failed to get current working directory\n");
         return ;
     }
     snprintf(ALIAS, sizeof(ALIAS), "%s/.files/ALIAS", path_memory);
@@ -403,8 +403,52 @@ void execute_command(char **token_arr, int *run){
 
     if (find(map, token_arr[0]))
     {
-        replace_alias(map, token_arr);
+        int position = 0;
+        char **temp = replace_alias(map, token_arr);
+        int size = 0;
+        
+        while (token_arr[size] != NULL) 
+        {
+            size++;
+        }
+        
+        for (int i = 0; token_arr[i] != NULL; i++)
+        {
+            free(token_arr[i]);
+        }
+        
+        while (temp[position] != NULL)
+        {
+            token_arr[position] = strdup(temp[position]);
+            position++;
+        }
+        
+        if (position >= size)
+        {
+            size += 64;
+            token_arr = realloc(token_arr, size * sizeof(char *));
+            if (!token_arr)
+            {
+                fprintf(stderr, "psh: allocation error\n");
+                for (int i = 0; i < position; i++)
+                {
+                    free(token_arr[i]);
+                }
+                free(token_arr);
+                exit(EXIT_FAILURE);
+            }
+         }
+        token_arr[position] = '\0';
+        
+        // free array ----------------
+        for (int i; temp[i] != NULL; i++)
+        {
+            free(temp[i]);
+        }
+        free(temp);
+        // free array -------------------
     }
+        
     free_map(map);
     for (int j = 0; j < size_builtin_str; j++)
     {

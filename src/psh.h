@@ -71,13 +71,12 @@ extern char PREV_DIR[PATH_MAX];
 extern char PATH[PATH_MAX];
 extern char path_memory[PATH_MAX];
 extern char session_id[32];
-
 extern int last_command_up;
 extern char path_memory[];
 
 extern struct Variable global_vars[MAX_VARS]; // Global array to store variables
 extern int num_vars; 
-extern int last_command_up;
+// extern int last_command_up;
 
 extern char *history[PATH_MAX];
 extern int history_count;
@@ -135,7 +134,8 @@ void free_map(HashMap *);
 void delete_alias(HashMap *, const char *);
 Alias *find(HashMap *, const char *);
 const char *get_alias_command(HashMap *, const char *);
-void replace_alias(HashMap *, char **);
+char **split_strings(const char *);
+char **replace_alias(HashMap *, char **);
 void generate_session_id();
 void initialize_paths(const char *);
 void get_session_path(char *, size_t, const char *);
