@@ -1,4 +1,5 @@
 #include "psh.h"
+#include <stdio.h>
 char path_memory[PATH_MAX]="";
 int last_command_up = 0;
 char session_id[32];
@@ -187,6 +188,9 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
 }
 
 void handle_input(char **inputline, size_t *n, const char *PATH) {
+
+    // printf("inputline is %s\n",*inputline);
+
     if (history_count == 0) {
         load_history();
     }
