@@ -1,5 +1,4 @@
 #include "psh.h"
-#include <stdio.h>
 char path_memory[PATH_MAX]="";
 int last_command_up = 0;
 char session_id[32];
@@ -156,6 +155,7 @@ char **PSH_TOKENIZER(char *line)
 
 int PSH_EXEC_EXTERNAL(char **token_arr)
 {
+    // printf("heereeeeeee\n");
     pid_t pid, wpid;
     int status;
 
@@ -368,6 +368,7 @@ void process_commands(char *inputline, int *run){
 
     free_double_pointer(commands);
 }
+
 
 void execute_command(char **token_arr, int *run){
     HashMap *map = create_map(HASHMAP_SIZE);

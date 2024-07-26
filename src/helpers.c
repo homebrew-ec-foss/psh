@@ -660,7 +660,7 @@ void print_prompt(const char *PATH) {
     char *ps1 = getenv("PS1");
     if (ps1 == NULL) {
         // New default PS1
-        ps1 = "\\[\\e[1;32m\\]\\u\\[\\e[0m\\]@\\[\\e[1;33m\\]PSH\\[\\e[0m\\] → \\[\\e[1;34m\\]\\W\\[\\e[0m\\]$ ";
+        ps1 = "\\[\\e[1;31m\\]\\u\\[\\e[0m\\]@\\[\\e[1;33m\\]PSH\\[\\e[0m\\] → \\[\\e[1;34m\\]\\W\\[\\e[0m\\]$ ";
     }
     parse_ps1(ps1, PATH);
 }
