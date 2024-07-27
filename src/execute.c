@@ -1,4 +1,11 @@
+#include "colors.h"
 #include "psh.h"
+
+
+const char *yellow="\033[33m";
+const char *green="\033[32m";
+// const char *reset="\033[0m";
+
 char path_memory[PATH_MAX]="";
 int last_command_up = 0;
 char session_id[32];
@@ -214,6 +221,8 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
     while (1) {
         if (kbhit()) {
             char ch = getchar();
+            char buff[PATH_MAX] = {0};
+            strncat(buff, &ch, 1);
             if (ch == '\033') { // ESC character
                 getchar(); // skip the [
                 ch = getchar();
@@ -273,11 +282,37 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                     memmove(&buffer[cursor+1], &buffer[cursor], pos - cursor + 1);
                     buffer[cursor] = ch;
                     pos++;
-                    printf("%s", &buffer[cursor]);
                     cursor++;
-                    for (size_t i = pos; i > cursor; i--) {
-                        printf("\b");
+                    // printf("%s", &buffer[cursor]);
+                    // for (size_t i = pos; i > cursor; i--) {
+                    //     printf("\b");
+                    // }
+                    printf("\r\033[K"); // Clear the current line
+                    print_prompt(PATH);
+
+                    char buff1[1024 * 4];
+                    char buff2[1024 * 4];
+                    struct stat stats;
+                    snprintf(buff1, sizeof(buff1), "/usr/bin/%s", buffer);
+                    snprintf(buff2, sizeof(buff2), "/bin/%s", buffer);
+
+                    int is_builtin = 0;
+                    for (int i = 0; i < size_builtin_str; i++) {
+                        if (strncmp(buffer, builtin_str[i], strlen(builtin_str[i])) == 0) {
+                            is_builtin = 1;
+                            break;
+                        }
                     }
+
+                    // Print the buffer with appropriate color
+                    if (is_builtin || (stat(buff1, &stats) == 0) || (stat(buff2, &stats)==0)) {
+                        // printf(COLOR_GREEN "%s" COLOR_RESET, buffer);
+                        printf("%s%s%s",GRN,buffer,reset);
+                    } else {
+                        // printf(COLOR_YELLOW "%s" COLOR_RESET, buffer);
+                        printf("%s%s%s",YEL,buffer,reset);
+                    }
+
                     fflush(stdout);
                 }
             }

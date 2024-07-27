@@ -4,6 +4,7 @@
 
 // Our Headers
 #include "builtin.h"
+#include "colors.h"
 
 // C Headers
 #include <stdio.h>
@@ -30,9 +31,7 @@
 #define ARROW_DOWN 'B'
 #define ARROW_LEFT 'D'
 #define ARROW_RIGHT 'C'
-#include <fcntl.h>
-#include <termios.h>
-#include <ctype.h>
+
 
 
 #define MAX_VARS 100
@@ -95,21 +94,20 @@ extern char *history[PATH_MAX];
 extern int history_count;
 extern int current_history;
 
-extern const char *red;
-extern const char *green;
-extern const char *yellow;
-extern const char *blue;
-extern const char *magenta;
-extern const char *cyan;
-extern const char *white;
-extern const char *reset;
-extern const char *gray;
+// extern const char *red;
+// extern const char *green;
+// extern const char *yellow;
+// extern const char *blue;
+// extern const char *magenta;
+// extern const char *cyan;
+// extern const char *white;
+// // extern const char *reset;
+// extern const char *gray;
 
 extern int color_checker;
 extern const char *color_code; //= "\033[0m";  // Default to reset color
 extern char *color;
 extern char *color_value;
-
 
 // struct Func global_funcs[MAX_FUNCS];
 // int num_funcs = 0;

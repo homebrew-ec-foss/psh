@@ -9,7 +9,7 @@ int main(int argc, char **argv, char **envp)
     getcwd(cwd, sizeof(cwd)); // home/$USER/psh
     strcpy(PATH, cwd);
 
-    strcat(PATH, "/.files/pshrc");
+    // strcat(PATH, "/.files/pshrc");
     // printf("%s\n",PATH);
 
 
