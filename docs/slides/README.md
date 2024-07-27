@@ -22,8 +22,8 @@ We have implemented the basic structure of a shell and execution of some built-i
 
 ## week-2
 
-[slides](slides-w2.pdf)
+[slides](week-2.pdf)
 
 ## week-3
 
-[slides](slides-w3.pdf)
+[slides](week-3.pdf)
