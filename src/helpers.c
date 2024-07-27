@@ -1179,3 +1179,7 @@ void handle_env_variable(char *token_arr[]) {
         free(input);
     }
 }
+
+void get_alias_path(char *path_session, size_t size, const char *cwd) {
+    snprintf(path_session, size, "%s/.files/ALIAS", cwd);
+}
