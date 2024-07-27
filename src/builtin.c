@@ -5,6 +5,7 @@
 char cwd[PATH_MAX];
 char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for", "type","read", "alias", "unalias"};
 int (*builtin_func[])(char **) = {&PSH_EXIT, &PSH_CD, &PSH_ECHO, &PSH_PWD, &PSH_FC, &PSH_EXPORT, &PSH_FOR, &PSH_TYPE, &PSH_READ_SHELL, &PSH_ALIAS, &PSH_UNALIAS};
+
 int size_builtin_str = sizeof(builtin_str) / sizeof(builtin_str[0]);
 struct Variable global_vars[MAX_VARS];
 int num_vars = 0;
@@ -1238,7 +1239,13 @@ int PSH_READ_SHELL(char **token_arr)
 int PSH_ALIAS(char **token_arr)
 {
   // Setting ALIAS file location
+
+
     char ALIAS[PATH_MAX];
+    // getcwd(cwd, sizeof(cwd)); // home/$USER/psh
+    // strcpy(PATH, cwd);
+    // strcat(ALIAS, "/.files/ALIAS");
+
     char path_memory[PATH_MAX];
     if (!getcwd(path_memory, sizeof(path_memory)))
     {
@@ -1261,24 +1268,24 @@ int PSH_ALIAS(char **token_arr)
                 }
             }
         } 
-        else if (strchr(token_arr[1], '=')) 
+    else if (strchr(token_arr[1], '=')) 
+    {
+        char *name = strtok(token_arr[1], "=");
+        char *command = strtok(NULL, "=");
+        if (command && strchr(command, '\n')) 
         {
-            char *name = strtok(token_arr[1], "=");
-            char *command = strtok(NULL, "=");
-            if (command && strchr(command, '\n')) 
-            {
-                *strchr(command, '\n') = '\0';
-            }
-            if (find(map, name))
-            {
-              delete_alias(map, name);
-            }
-            insert_alias(map, name, command);
-        } 
-        else 
-        {
-            fprintf(stderr, "Unknown option: %s\n", token_arr[1]);
+            *strchr(command, '\n') = '\0';
         }
+        if (find(map, name))
+        {
+            delete_alias(map, name);
+        }
+        insert_alias(map, name, command);
+    } 
+    else 
+    {
+        fprintf(stderr, "Unknown option: %s\n", token_arr[1]);
+    }
     // Save Aliases to file
     save_aliases(map, ALIAS);
 

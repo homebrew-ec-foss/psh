@@ -2,6 +2,7 @@
 #include "psh.h"
 // char path_memory[PATH_MAX];
 
+
 void free_double_pointer(char **array)
 {
     if (array == NULL)
@@ -600,16 +601,68 @@ void get_last_line(char **inputline) {
     }
 }
 
-void print_prompt(const char *PATH) {
-    char last_component[PATH_MAX];
-    get_last_path_component(PATH, last_component);
-
-    if (strcmp(PATH, "/") == 0) {
-        printf("%s@PSH → %s $ ", getenv("USER"), "/");
-    } else {
-        printf("%s@PSH → %s $ ", getenv("USER"), last_component);
+void parse_ps1(const char *ps1, const char *cwd) {
+    char expanded[4096] = "";
+    char *exp_ptr = expanded;
+    
+    while (*ps1) {
+        if (*ps1 == '\\') {
+            ps1++;
+            switch (*ps1) {
+                case 'u':
+                    exp_ptr += sprintf(exp_ptr, "%s", getenv("USER"));
+                    break;
+                case 'h':
+                    {
+                        char hostname[256];
+                        gethostname(hostname, sizeof(hostname));
+                        exp_ptr += sprintf(exp_ptr, "%s", hostname);
+                    }
+                    break;
+                case 'w':
+                    exp_ptr += sprintf(exp_ptr, "%s", cwd);
+                    break;
+                case 'W':
+                    {
+                        char *last_slash = strrchr(cwd, '/');
+                        exp_ptr += sprintf(exp_ptr, "%s", last_slash ? last_slash + 1 : cwd);
+                    }
+                    break;
+                case '$':
+                    exp_ptr += sprintf(exp_ptr, " %s ", getuid() == 0 ? "#" : "$");
+                    break;
+                case '[':
+                case ']':
+                    // Ignore these characters as they're used for bash prompt escaping
+                    break;
+                case 'e':
+                    *exp_ptr++ = '\033';  // ESC character
+                    break;
+                default:
+                    *exp_ptr++ = '\\';
+                    *exp_ptr++ = *ps1;
+            }
+        } else if (*ps1 == '\033') {
+            // If we encounter an ESC character directly, copy it
+            *exp_ptr++ = *ps1;
+        } else {
+            *exp_ptr++ = *ps1;
+        }
+        ps1++;
     }
+    *exp_ptr = '\0';
+    
+    printf("%s$ ", expanded);
     fflush(stdout);
+}
+
+void print_prompt(const char *PATH) {
+    char *ps1 = getenv("PS1");
+    if (ps1 == NULL) {
+        // New default PS1
+        ps1 = "\\[\\e[1;36m\\]\\u\\[\\e[0m\\]@\\[\\e[1;34m\\]PSH\\[\\e[0m\\] → \\[\\e[1;35m\\]\\W\\[\\e[0m\\]";
+    }
+    parse_ps1(ps1, PATH);
 }
 
 void load_history() {
@@ -936,5 +989,71 @@ void replace_alias(HashMap *map, char **token_arr)
     if (command) 
     {
         token_arr[0] = strdup(command);
+    }
+}
+
+char *remove_quotes(char *str) {
+    size_t len = strlen(str);
+    if ((str[0] == '"' && str[len - 1] == '"') || (str[0] == '\'' && str[len - 1] == '\'')) {
+        str[len - 1] = '\0';
+        return str + 1;
+    }
+    return str;
+}
+
+// Function to expand environment variables within a string
+char *expand_variables(char *str) {
+    static char buffer[1024];
+    char *ptr = str;
+    char *buf_ptr = buffer;
+
+    while (*ptr) {
+        if (*ptr == '$') {
+            ptr++;
+            char var_name[256];
+            char *var_ptr = var_name;
+
+            while (*ptr && (isalnum(*ptr) || *ptr == '_')) {
+                *var_ptr++ = *ptr++;
+            }
+            *var_ptr = '\0';
+
+            char *var_value = getenv(var_name);
+            if (var_value) {
+                while (*var_value) {
+                    *buf_ptr++ = *var_value++;
+                }
+            }
+        } else {
+            *buf_ptr++ = *ptr++;
+        }
+    }
+    *buf_ptr = '\0';
+    return buffer;
+}
+
+void handle_env_variable(char *token_arr[]) {
+    if (strchr(token_arr[0], '=')) {
+        char *input = strdup(token_arr[0]);
+        if (input == NULL) {
+            perror("strdup");
+            return;
+        }
+
+        char *var_name = strtok(input, "=");
+        char *var_value = strtok(NULL, "=");
+
+        if (var_name && var_value) {
+            var_value = remove_quotes(var_value);
+            var_value = expand_variables(var_value);
+
+            if (setenv(var_name, var_value, 1) != 0) {
+                perror("setenv");
+            }
+        } else {
+            fprintf(stderr, "Error: Invalid environment variable assignment\n");
+        }
+
+        free(input);
     }
 }
