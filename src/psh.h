@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <ctype.h>
+#include <errno.h>
 
 
 #define MAX_VARS 100

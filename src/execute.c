@@ -162,25 +162,27 @@ char **PSH_TOKENIZER(char *line)
 
 int PSH_EXEC_EXTERNAL(char **token_arr)
 {
-    // printf("heereeeeeee\n");
     pid_t pid, wpid;
     int status;
 
     pid = fork();
     if (pid == 0)
     {
+        // Child process
         if (execvp(token_arr[0], token_arr) == -1)
         {
-            fprintf(stdout, "psh: No command found: %s\n", token_arr[0]);
+            perror("psh error");
+            exit(EXIT_FAILURE);
         }
-        exit(EXIT_FAILURE);
     }
     else if (pid < 0)
     {
+        // Forking error
         perror("psh error");
     }
     else
     {
+        // Parent process
         do
         {
             wpid = waitpid(pid, &status, WUNTRACED);
@@ -190,9 +192,15 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
                 exit(EXIT_FAILURE);
             }
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+
+        if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+        {
+            fprintf(stdout, "psh: Incorrect arguments or no arguments provided. Try \"man %s\" for usage details.\n", token_arr[0], token_arr[0]);
+        }
     }
     return 1;
 }
+
 
 void handle_input(char **inputline, size_t *n, const char *PATH) {
 
