@@ -18,7 +18,7 @@ int main(int argc, char **argv, char **envp)
 
 
     //load pshrc
-    PSH_SCRIPT(COPY_PATH_PSHRC);
+    // PSH_SCRIPT(COPY_PATH_PSHRC);
 
     if (argc == 2)
     {   
