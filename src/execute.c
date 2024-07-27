@@ -1,4 +1,11 @@
+#include "colors.h"
 #include "psh.h"
+
+
+const char *yellow="\033[33m";
+const char *green="\033[32m";
+// const char *reset="\033[0m";
+
 char path_memory[PATH_MAX]="";
 int last_command_up = 0;
 char session_id[32];
@@ -8,26 +15,31 @@ int history_count = 0;
 int current_history = -1;
 
 // Helper function to split the input line by ';'
-char **split_commands(char *input)
-{
-    size_t bufsize = 64, position = 0;
+char **split_commands(char *input) {
+    size_t bufsize = 64;
+    size_t position = 0;
     char **commands = malloc(bufsize * sizeof(char *));
     char *command_start = input;
-    int in_for_loop = 0;
+    int in_single_quote = 0;
+    int in_double_quote = 0;
 
-    if (!commands)
-    {
+    if (!commands) {
         fprintf(stderr, "psh: allocation error\n");
         exit(EXIT_FAILURE);
     }
 
-    for (char *c = input; *c != '\0'; c++)
-    {
-        if (!in_for_loop && *c == ';')
-        {
+    for (char *c = input; *c != '\0'; c++) {
+        // Handle quotes
+        if (*c == '\'' && !in_double_quote) {
+            in_single_quote = !in_single_quote;
+        } else if (*c == '\"' && !in_single_quote) {
+            in_double_quote = !in_double_quote;
+        }
+        
+        // Handle end of command
+        if (!in_single_quote && !in_double_quote && *c == ';') {
             commands[position] = malloc((c - command_start + 1) * sizeof(char));
-            if (!commands[position])
-            {
+            if (!commands[position]) {
                 fprintf(stderr, "psh: allocation error\n");
                 exit(EXIT_FAILURE);
             }
@@ -35,12 +47,10 @@ char **split_commands(char *input)
             commands[position][c - command_start] = '\0';
             position++;
 
-            if (position >= bufsize)
-            {
+            if (position >= bufsize) {
                 bufsize += 64;
                 commands = realloc(commands, bufsize * sizeof(char *));
-                if (!commands)
-                {
+                if (!commands) {
                     fprintf(stderr, "psh: allocation error\n");
                     exit(EXIT_FAILURE);
                 }
@@ -48,22 +58,12 @@ char **split_commands(char *input)
 
             command_start = c + 1;
         }
-        else if (strncmp(c, "for ", 4) == 0)
-        {
-            in_for_loop++;
-        }
-        else if (in_for_loop && strncmp(c, "done", 4) == 0)
-        {
-            in_for_loop--;
-            c += 3; // Move past "done"
-        }
     }
 
-    if (command_start != input + strlen(input))
-    {
+    // Handle the last command
+    if (command_start != input + strlen(input)) {
         commands[position] = strdup(command_start);
-        if (!commands[position])
-        {
+        if (!commands[position]) {
             fprintf(stderr, "psh: allocation error\n");
             exit(EXIT_FAILURE);
         }
@@ -73,7 +73,6 @@ char **split_commands(char *input)
     commands[position] = NULL;
     return commands;
 }
-
 char **PSH_TOKENIZER(char *line)
 {
     size_t bufsize = 64, position = 0, i;
@@ -163,6 +162,7 @@ char **PSH_TOKENIZER(char *line)
 
 int PSH_EXEC_EXTERNAL(char **token_arr)
 {
+    // printf("heereeeeeee\n");
     pid_t pid, wpid;
     int status;
 
@@ -195,6 +195,9 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
 }
 
 void handle_input(char **inputline, size_t *n, const char *PATH) {
+
+    // printf("inputline is %s\n",*inputline);
+
     if (history_count == 0) {
         load_history();
     }
@@ -218,6 +221,8 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
     while (1) {
         if (kbhit()) {
             char ch = getchar();
+            char buff[PATH_MAX] = {0};
+            strncat(buff, &ch, 1);
             if (ch == '\033') { // ESC character
                 getchar(); // skip the [
                 ch = getchar();
@@ -277,11 +282,37 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                     memmove(&buffer[cursor+1], &buffer[cursor], pos - cursor + 1);
                     buffer[cursor] = ch;
                     pos++;
-                    printf("%s", &buffer[cursor]);
                     cursor++;
-                    for (size_t i = pos; i > cursor; i--) {
-                        printf("\b");
+                    // printf("%s", &buffer[cursor]);
+                    // for (size_t i = pos; i > cursor; i--) {
+                    //     printf("\b");
+                    // }
+                    printf("\r\033[K"); // Clear the current line
+                    print_prompt(PATH);
+
+                    char buff1[1024 * 4];
+                    char buff2[1024 * 4];
+                    struct stat stats;
+                    snprintf(buff1, sizeof(buff1), "/usr/bin/%s", buffer);
+                    snprintf(buff2, sizeof(buff2), "/bin/%s", buffer);
+
+                    int is_builtin = 0;
+                    for (int i = 0; i < size_builtin_str; i++) {
+                        if (strncmp(buffer, builtin_str[i], strlen(builtin_str[i])) == 0) {
+                            is_builtin = 1;
+                            break;
+                        }
                     }
+
+                    // Print the buffer with appropriate color
+                    if (is_builtin || (stat(buff1, &stats) == 0) || (stat(buff2, &stats)==0)) {
+                        // printf(COLOR_GREEN "%s" COLOR_RESET, buffer);
+                        printf("%s%s%s",GRN,buffer,reset);
+                    } else {
+                        // printf(COLOR_YELLOW "%s" COLOR_RESET, buffer);
+                        printf("%s%s%s",YEL,buffer,reset);
+                    }
+
                     fflush(stdout);
                 }
             }
@@ -361,6 +392,9 @@ void process_commands(char *inputline, int *run){
                 free_double_pointer(commands);
                 free_history();
             }
+
+            // color_check(token_arr);
+            
             execute_command(token_arr, run);
         }
 
@@ -370,7 +404,11 @@ void process_commands(char *inputline, int *run){
     free_double_pointer(commands);
 }
 
+
 void execute_command(char **token_arr, int *run){
+
+
+    
     HashMap *map = create_map(HASHMAP_SIZE);
     char ALIAS[PATH_MAX];
     char path_memory[PATH_MAX];
@@ -382,24 +420,6 @@ void execute_command(char **token_arr, int *run){
     snprintf(ALIAS, sizeof(ALIAS), "%s/.files/ALIAS", path_memory);
     load_aliases(map, ALIAS);
 
-    if (strchr(token_arr[0], '='))
-    {
-        char *var_name = strtok(token_arr[0], "=");
-        char *var_value = strtok(NULL, "=");
-
-        if (var_value != NULL)
-        {
-            // if (num_vars < MAX_VARS) {
-            //     strcpy(global_vars[num_vars].var_name, var_name);
-            //     strcpy(global_vars[num_vars].var_value, var_value);
-            //     num_vars++;
-            // } else {
-            //     fprintf(stderr, "PSH: Invalid variable assignment\n");
-            // }
-            setenv(var_name, var_value, 1);
-            return;
-        }
-    }
 
     if (find(map, token_arr[0]))
     {
@@ -450,6 +470,11 @@ void execute_command(char **token_arr, int *run){
     }
         
     free_map(map);
+    if (strchr(token_arr[0], '='))
+    {
+        handle_env_variable(token_arr);
+        return;
+    }
     for (int j = 0; j < size_builtin_str; j++)
     {
         if (strcmp(token_arr[0], builtin_str[j]) == 0)
@@ -459,6 +484,7 @@ void execute_command(char **token_arr, int *run){
             return;
         }
     }
+
 
     if (!contains_wildcard(token_arr))
     {

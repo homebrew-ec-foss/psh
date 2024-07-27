@@ -1,21 +1,32 @@
 // main.c
 #include "psh.h"
-
 // Unused Parameters
 int main(int argc, char **argv, char **envp)
 {
+    // setenv("PS1_COLOR", "\033[0m", 1); // Set default color to reset
 
     printf("\e[1;1H\e[2J"); // basically clears the screen
-    printf("Welcome to psh!\n");
+    getcwd(cwd, sizeof(cwd)); // home/$USER/psh
+    strcpy(PATH, cwd);
+    
+    char COPY_PATH_PSHRC[PATH_MAX];
+    snprintf(COPY_PATH_PSHRC, sizeof(COPY_PATH_PSHRC), "%s/.files/pshrc", cwd); // Form the path to pshrc
+
+    // strcpy(COPY_PATH_PSHRC, cwd);
+    // strcpy(COPY_PATH_PSHRC, "/.files/pshrc");
+    // printf("%s\n",PATH);
+
+
+    //load pshrc
+    // PSH_SCRIPT(COPY_PATH_PSHRC);
 
     if (argc == 2)
-    {
+    {   
         return PSH_SCRIPT(argv[1]);
     }
     else
     {
-        getcwd(cwd, sizeof(cwd)); // home/$USER/psh
-        strcpy(PATH, cwd);
+        printf("Welcome to psh!\n");
         initialize_shell(cwd);
         return PSH_LOOP();
     }
@@ -46,6 +57,66 @@ int PSH_LOOP(void)
     free(inputline);
     return run;
 }
+
+
+// int PSH_SCRIPT(const char *file)
+// {
+
+//     FILE *script = fopen(file, "r");
+
+//     int run = 1;
+//     size_t n = 0;
+//     char *inputline = NULL;
+//     int result = 0;
+
+//     if (script == NULL)
+//     {
+//         fprintf(stderr, "FILE open failed\n");
+//         run = 0;
+//         return -1;
+//     }
+
+//     while (run == 1)
+//     {
+//         if (getline(&inputline, &n, script) == -1)
+//         {
+//             if (feof(script))
+//             {
+//                 // Reached end of file
+//                 // feof() doesn't actually detect the end of the file itself.
+//                 // Instead, it reports whether a previous read operation has attempted
+//                 // to read past the end of the file.
+//                 break;
+//             }
+//             if (errno != 0)
+//             {
+//                 perror("getline");
+//                 result = -1;
+//             }
+//             break;
+//         }
+        
+//         // printf("getline is %s \n", inputline);
+
+//         // handle_input(&inputline, &n, PATH);
+//         // char *comment_pos = strchr(inputline, '#');
+//         // if (comment_pos) {
+//         //     *comment_pos = '\0';
+//         // }
+//         if (inputline[0] == '\0')
+//         {
+//             continue;
+//         }
+//         // char path_session[PATH_MAX];
+//         // get_session_path(path_session, sizeof(path_session), cwd);
+//         // save_history(inputline,path_session);
+//         process_commands_script(inputline, &run);
+//     }
+//     free(inputline);
+//     fclose(script);
+//     return run;
+// }
+
 
 int PSH_SCRIPT(const char *file)
 {
@@ -107,23 +178,9 @@ int PSH_SCRIPT(const char *file)
             {
                 if (strchr(token_arr[0], '='))
                 {
-                    char *var_name = strtok(token_arr[0], "=");
-                    char *var_value = strtok(NULL, "=");
-                    if (var_value != NULL)
-                    {
-                        if (num_vars < MAX_VARS)
-                        {
-                            strcpy(global_vars[num_vars].var_name, var_name);
-                            strcpy(global_vars[num_vars].var_value, var_value);
-                            num_vars++;
-                        }
-                        else
-                        {
-                            fprintf(stderr, "PSH: Invalid variable assignment\n");
-                        }
-                        free_double_pointer(token_arr);
-                        continue;
-                    }
+                    handle_env_variable(token_arr);
+                    free_double_pointer(token_arr);
+                    continue;
                 }
                 int isinbuilt = 0;
                 for (int j = 0; j < size_builtin_str; j++)
