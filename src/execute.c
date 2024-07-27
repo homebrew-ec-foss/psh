@@ -5,7 +5,7 @@
 const char *yellow="\033[33m";
 const char *green="\033[32m";
 // const char *reset="\033[0m";
-
+char cwd[PATH_MAX];
 char path_memory[PATH_MAX]="";
 int last_command_up = 0;
 char session_id[32];
@@ -419,13 +419,7 @@ void execute_command(char **token_arr, int *run){
     
     HashMap *map = create_map(HASHMAP_SIZE);
     char ALIAS[PATH_MAX];
-    char path_memory[PATH_MAX];
-    if (!getcwd(path_memory, sizeof(path_memory)))
-    {
-        perror("Failed to get current working directory\n");
-        return ;
-    }
-    snprintf(ALIAS, sizeof(ALIAS), "%s/.files/ALIAS", path_memory);
+    get_alias_path(ALIAS, sizeof(ALIAS), cwd);
     load_aliases(map, ALIAS);
 
 

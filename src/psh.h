@@ -177,5 +177,6 @@ void parse_ps1(const char *, const char *);
 char *remove_quotes(char *);
 char *expand_variables(char *);
 void handle_env_variable(char *[]);
+void get_alias_path(char *, size_t, const char *);
 
 #endif

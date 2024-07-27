@@ -2,7 +2,7 @@
 
 // variables
 
-char cwd[PATH_MAX];
+//char cwd[PATH_MAX];
 char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for", "type","read", "alias", "unalias"};
 int (*builtin_func[])(char **) = {&PSH_EXIT, &PSH_CD, &PSH_ECHO, &PSH_PWD, &PSH_FC, &PSH_EXPORT, &PSH_FOR, &PSH_TYPE, &PSH_READ_SHELL, &PSH_ALIAS, &PSH_UNALIAS};
 
@@ -1246,14 +1246,8 @@ int PSH_ALIAS(char **token_arr)
     // strcpy(PATH, cwd);
     // strcat(ALIAS, "/.files/ALIAS");
 
-    char path_memory[PATH_MAX];
-    if (!getcwd(path_memory, sizeof(path_memory)))
-    {
-        perror("Failed to get current working directory");
-        return -1;
-    }
-    //printf("%s\n", path_memory);
-    snprintf(ALIAS, sizeof(ALIAS), "%s/.files/ALIAS", path_memory);
+    get_alias_path(ALIAS, sizeof(ALIAS), cwd);
+    // printf("ALIAS PATH: %s\n", ALIAS);
     // Initializing HashMap
     HashMap *map = create_map(HASHMAP_SIZE);
     load_aliases(map, ALIAS);
@@ -1268,30 +1262,26 @@ int PSH_ALIAS(char **token_arr)
                     current = current->next;
                 }
             }
-        } 
+    } 
     else if (strchr(token_arr[1], '=')) 
     {
-        char *name = strtok(token_arr[1], "=");
-        char *command = strtok(NULL, "=");
+        char *name = NULL;
+        char *command = NULL;
+        char *delimiter = strchr(token_arr[1], '=');
+        *delimiter = '\0';
+        name = token_arr[1];
+        command = delimiter + 1;
+        // printf("Command: %s\n", command);
         if (command && strchr(command, '\n')) 
         {
-            char *name = NULL;
-            char *command = NULL;
-            char *delimiter = strchr(token_arr[1], '=');
-            *delimiter = '\0';
-            name = token_arr[1];
-            command = delimiter + 1;
-            //printf("Command: %s\n", command);
-            if (command && strchr(command, '\n')) 
-            {
-                *strchr(command, '\n') = '\0';
-            }
-            if (find(map, name))
-            {
-              delete_alias(map, name);
-            }
-            insert_alias(map, name, command);
-     } 
+            *strchr(command, '\n') = '\0';
+        }
+        if (find(map, name))
+        {
+            delete_alias(map, name);
+        }
+        insert_alias(map, name, command);
+    } 
     else 
     {
         fprintf(stderr, "Unknown option: %s\n", token_arr[1]);
@@ -1302,19 +1292,13 @@ int PSH_ALIAS(char **token_arr)
     // Free memory
     free_map(map);
     return 1;
-    }
+    
 }
 
 int PSH_UNALIAS(char **token_arr)
 {
     char ALIAS[PATH_MAX];
-    char path_memory[PATH_MAX];
-    if (!getcwd(path_memory, sizeof(path_memory)))
-    {
-        perror("Failed to get current working directory");
-        return -1;
-    }
-    snprintf(ALIAS, sizeof(ALIAS), "%s/.files/ALIAS", path_memory);
+    get_alias_path(ALIAS, sizeof(ALIAS), cwd);
     // Initializing HashMap
     HashMap *map = create_map(HASHMAP_SIZE);
     load_aliases(map, ALIAS);
