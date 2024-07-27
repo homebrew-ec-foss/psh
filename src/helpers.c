@@ -892,7 +892,7 @@ void load_aliases(HashMap *map, const char *filepath)
                 char *name = NULL;
                 char *command = NULL;
                 char *delimiter = strchr(line, '=');
-                *delimiter = NULL;
+                *delimiter = '\0';
                 name = line;
                 command = delimiter + 1;
 
