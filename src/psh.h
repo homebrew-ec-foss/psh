@@ -26,7 +26,6 @@
 
 
 #define MAX_VARS 100
-#define PATH_MAX 4096
 #define ARROW_UP 'A'
 #define ARROW_DOWN 'B'
 #define ARROW_LEFT 'D'
@@ -80,6 +79,7 @@ extern int (*builtin_func[])(char **);
 extern int size_builtin_str;
 extern char PREV_DIR[PATH_MAX];
 extern char PATH[PATH_MAX];
+extern char COPY_PATH_PSHRC[PATH_MAX];
 extern char path_memory[PATH_MAX];
 extern char session_id[32];
 

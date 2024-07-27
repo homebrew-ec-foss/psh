@@ -406,6 +406,9 @@ void process_commands(char *inputline, int *run){
 
 
 void execute_command(char **token_arr, int *run){
+
+
+    
     HashMap *map = create_map(HASHMAP_SIZE);
     char ALIAS[PATH_MAX];
     char path_memory[PATH_MAX];

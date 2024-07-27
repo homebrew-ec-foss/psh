@@ -602,7 +602,7 @@ void get_last_line(char **inputline) {
 }
 
 void parse_ps1(const char *ps1, const char *cwd) {
-    char expanded[2048] = "";
+    char expanded[4096] = "";
     char *exp_ptr = expanded;
     
     while (*ps1) {
@@ -629,7 +629,7 @@ void parse_ps1(const char *ps1, const char *cwd) {
                     }
                     break;
                 case '$':
-                    exp_ptr += sprintf(exp_ptr, "%s", getuid() == 0 ? "#" : "$");
+                    exp_ptr += sprintf(exp_ptr, " %s ", getuid() == 0 ? "#" : "$");
                     break;
                 case '[':
                 case ']':
@@ -652,7 +652,7 @@ void parse_ps1(const char *ps1, const char *cwd) {
     }
     *exp_ptr = '\0';
     
-    printf("%s", expanded);
+    printf("%s$ ", expanded);
     fflush(stdout);
 }
 
@@ -660,7 +660,7 @@ void print_prompt(const char *PATH) {
     char *ps1 = getenv("PS1");
     if (ps1 == NULL) {
         // New default PS1
-        ps1 = "\\[\\e[1;36m\\]\\u\\[\\e[0m\\]@\\[\\e[1;34m\\]PSH\\[\\e[0m\\] → \\[\\e[1;35m\\]\\W\\[\\e[0m\\]$ ";
+        ps1 = "\\[\\e[1;36m\\]\\u\\[\\e[0m\\]@\\[\\e[1;34m\\]PSH\\[\\e[0m\\] → \\[\\e[1;35m\\]\\W\\[\\e[0m\\]";
     }
     parse_ps1(ps1, PATH);
 }

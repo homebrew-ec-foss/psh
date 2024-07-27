@@ -8,14 +8,17 @@ int main(int argc, char **argv, char **envp)
     printf("\e[1;1H\e[2J"); // basically clears the screen
     getcwd(cwd, sizeof(cwd)); // home/$USER/psh
     strcpy(PATH, cwd);
+    
+    char COPY_PATH_PSHRC[PATH_MAX];
+    snprintf(COPY_PATH_PSHRC, sizeof(COPY_PATH_PSHRC), "%s/.files/pshrc", cwd); // Form the path to pshrc
 
-    // strcat(PATH, "/.files/pshrc");
+    // strcpy(COPY_PATH_PSHRC, cwd);
+    // strcpy(COPY_PATH_PSHRC, "/.files/pshrc");
     // printf("%s\n",PATH);
 
 
-    //add a PSH_SCRIPT call to load pshrc
-    
-    PSH_SCRIPT(PATH);
+    //load pshrc
+    PSH_SCRIPT(COPY_PATH_PSHRC);
 
     if (argc == 2)
     {   

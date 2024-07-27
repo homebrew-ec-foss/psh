@@ -1239,7 +1239,13 @@ int PSH_READ_SHELL(char **token_arr)
 int PSH_ALIAS(char **token_arr)
 {
   // Setting ALIAS file location
+
+
     char ALIAS[PATH_MAX];
+    // getcwd(cwd, sizeof(cwd)); // home/$USER/psh
+    // strcpy(PATH, cwd);
+    // strcat(ALIAS, "/.files/ALIAS");
+
     char path_memory[PATH_MAX];
     if (!getcwd(path_memory, sizeof(path_memory)))
     {
