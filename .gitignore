@@ -64,4 +64,5 @@ build/
 test/
 main
 psh
-.files/*
+
+!.files/.pshrc
