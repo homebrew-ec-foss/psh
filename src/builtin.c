@@ -1302,6 +1302,7 @@ int PSH_ALIAS(char **token_arr)
     // Free memory
     free_map(map);
     return 1;
+    }
 }
 
 int PSH_UNALIAS(char **token_arr)
@@ -1340,5 +1341,4 @@ int PSH_UNALIAS(char **token_arr)
     free_map(map);
 
     return 1;
-}
 }
