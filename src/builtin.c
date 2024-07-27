@@ -1278,7 +1278,7 @@ int PSH_ALIAS(char **token_arr)
             char *name = NULL;
             char *command = NULL;
             char *delimiter = strchr(token_arr[1], '=');
-            *delimiter = NULL;
+            *delimiter = '\0';
             name = token_arr[1];
             command = delimiter + 1;
             //printf("Command: %s\n", command);
