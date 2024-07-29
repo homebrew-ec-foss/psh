@@ -164,15 +164,25 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
 {
     pid_t pid, wpid;
     int status;
+    sigset_t sigset, oldset;
+
+    // Blocking SIGINT in the parent process
+    sigemptyset(&sigset);
+    sigaddset(&sigset, SIGINT);
+    sigprocmask(SIG_BLOCK, &sigset, &oldset);
 
     pid = fork();
     if (pid == 0)
     {
+        // Restoring the default SIGINT behavior in the child process
+        sigprocmask(SIG_SETMASK, &oldset, NULL);
+        signal(SIGINT, SIG_DFL);
+
         // Child process
         if (execvp(token_arr[0], token_arr) == -1)
         {
             perror("psh error");
-            exit(EXIT_FAILURE);
+            // exit(EXIT_FAILURE);
         }
     }
     else if (pid < 0)
@@ -193,6 +203,9 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
             }
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
 
+        // Restoring the old signal mask
+        sigprocmask(SIG_SETMASK, &oldset, NULL);
+
         if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
         {
             fprintf(stdout, "psh: Incorrect arguments or no arguments provided. Try \"man %s\" for usage details.\n", token_arr[0]);
@@ -200,7 +213,6 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
     }
     return 1;
 }
-
 
 void handle_input(char **inputline, size_t *n, const char *PATH) {
 
