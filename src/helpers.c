@@ -995,7 +995,6 @@ char **split_strings(const char *string) {
         exit(EXIT_FAILURE);
     }
 
-    char *token = strtok(str, " ");
     size_t bufsize = 64;
     int position = 0;
     char **split_arr = malloc(bufsize * sizeof(char *));
@@ -1005,6 +1004,7 @@ char **split_strings(const char *string) {
         exit(EXIT_FAILURE);
     }
 
+    char *token = strtok(str, " ");
     while (token != NULL) {
         split_arr[position] = strdup(token);
         if (!split_arr[position]) {
@@ -1051,21 +1051,26 @@ char **replace_alias(HashMap *map, char **token_arr) {
         char **temp_arr = split_strings(command);
         while (temp_arr[position] != NULL) {
             new_token_arr[position] = strdup(temp_arr[position]);
-            if (!new_token_arr[position]) {
+            if (!new_token_arr[position])
+            {
                 fprintf(stderr, "psh: strdup allocation error\n");
-                for (int i = 0; i < position; i++) {
+                for (int i = 0; i < position; i++) 
+                {
                     free(new_token_arr[i]);
                 }
                 free(new_token_arr);
                 exit(EXIT_FAILURE);
             }
             position++;
-            if (position >= bufsize) {
+            if (position >= bufsize) 
+            {
                 bufsize += 64;
                 new_token_arr = realloc(new_token_arr, bufsize * sizeof(char *));
-                if (!new_token_arr) {
+                if (!new_token_arr) 
+                {
                     fprintf(stderr, "psh: allocation error\n");
-                    for (int i = 0; i < position; i++) {
+                    for (int i = 0; i < position; i++) 
+                    {
                         free(new_token_arr[i]);
                     }
                     free(new_token_arr);
@@ -1083,7 +1088,7 @@ char **replace_alias(HashMap *map, char **token_arr) {
                     free(new_token_arr[j]);
                 }
                 free(new_token_arr);
-                exit(EXIT_FAILURE);
+                //exit(EXIT_FAILURE);
             }
             position++;
             i++;
@@ -1096,7 +1101,7 @@ char **replace_alias(HashMap *map, char **token_arr) {
                         free(new_token_arr[j]);
                     }
                     free(new_token_arr);
-                    exit(EXIT_FAILURE);
+                    //exit(EXIT_FAILURE);
                 }
             }
         }

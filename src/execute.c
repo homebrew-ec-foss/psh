@@ -428,16 +428,11 @@ void execute_command(char **token_arr, int *run){
         int position = 0;
         char **temp = replace_alias(map, token_arr);
         int size = 0;
+        size_t bufsize = 64;
         
-        while (token_arr[size] != NULL) 
-        {
-            size++;
-        }
-        
-        for (int i = 0; token_arr[i] != NULL; i++)
-        {
-            free(token_arr[i]);
-        }
+        free_double_pointer(token_arr);
+
+        char **token_arr = malloc(bufsize * sizeof(char *));
         
         while (temp[position] != NULL)
         {
@@ -460,15 +455,9 @@ void execute_command(char **token_arr, int *run){
                 exit(EXIT_FAILURE);
             }
          }
-        token_arr[position] = '\0';
+        token_arr[position] = '\0';    
+        free_double_pointer(temp);
         
-        // free array ----------------
-        for (int i; temp[i] != NULL; i++)
-        {
-            free(temp[i]);
-        }
-        free(temp);
-        // free array -------------------
     }
         
     free_map(map);
