@@ -57,12 +57,13 @@ dkms.conf
 # binaries
 bin
 psh
+main
 
 #vscode
 build/
 .vscode/
-test/
-main
-psh
+test/*
 
+# dotfiles
+.files/*
 !.files/.pshrc
