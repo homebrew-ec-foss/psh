@@ -33,3 +33,4 @@ make run
 - [week-1](docs/slides/README.md)
 - [week-2](docs/slides/week-2.pdf)
 - [week-3](docs/slides/week-3.pdf)
+- [week-4](docs/slides/week-4.pdf)

@@ -27,3 +27,8 @@ We have implemented the basic structure of a shell and execution of some built-i
 ## week-3
 
 [slides](week-3.pdf)
+
+## week-3
+
+[slides](week-4.pdf)
+
