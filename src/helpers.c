@@ -1,5 +1,6 @@
 // helpers.c
 #include "psh.h"
+#include <unistd.h>
 int SIGNAL = 0;
 // char path_memory[PATH_MAX];
 
@@ -1185,7 +1186,7 @@ void get_alias_path(char *path_session, size_t size, const char *cwd) {
     snprintf(path_session, size, "%s/.files/ALIAS", cwd);
 }
 
-void handler(int num)
+void handler()
 {
     write(STDOUT_FILENO,"checking signals\n",64);
     SIGNAL = 1;
