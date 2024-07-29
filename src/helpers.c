@@ -163,7 +163,8 @@ void read_lines_reverse(const char *filename, int low_lim, int up_lim)
                 }
             }
             // Storing the line with the line number
-            asprintf(&lines[size++], "%zu %s", line_no, line);
+            lines[size++] = malloc((strlen(line) + 1) * sizeof(char));
+            sprintf(lines[size - 1], "%zu %s", line_no, line);
         }
         line_no++;
         if (line_no > up_lim)
