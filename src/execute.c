@@ -241,7 +241,7 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
         if(SIGNAL == 1)
         {
             SIGNAL = 0;
-            fflush(stdout);
+            // fflush(stdout);
             // printf("\e[1;1H\e[2J");
             printf("SIGINT detected\n");
             print_prompt(PATH);
@@ -310,6 +310,10 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                 system("clear");
                 print_prompt(PATH);
             } 
+            else if (ch == 0x04 && cursor == 0) {
+                printf("helo world 69\n");
+                exit(0);
+            }
             else {
                 if (pos < MAX_LINE_LENGTH - 1) {
                     memmove(&buffer[cursor+1], &buffer[cursor], pos - cursor + 1);
