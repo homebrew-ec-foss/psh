@@ -1,5 +1,5 @@
-#include "colors.h"
 #include "psh.h"
+#include "colors.h"
 
 
 const char *yellow="\033[33m";
@@ -182,7 +182,7 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
         if (execvp(token_arr[0], token_arr) == -1)
         {
             perror("psh error");
-            // exit(EXIT_FAILURE);
+            exit(EXIT_FAILURE);
         }
     }
     else if (pid < 0)
@@ -232,7 +232,7 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
 
     enableRawMode();
 
-    char buffer[PATH_MAX] = {0};
+    char buffer[1024] = {0};
     size_t pos = 0;
     size_t cursor = 0;
     current_history = -1;
@@ -250,6 +250,7 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
             char ch = getchar();
             char buff[PATH_MAX] = {0};
             strncat(buff, &ch, 1);
+            
             if (ch == '\033') { // ESC character
                 getchar(); // skip the [
                 ch = getchar();
@@ -304,7 +305,12 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                 buffer[pos] = '\0';
                 printf("\n");
                 break;
-            } else {
+            }
+            else if (ch == 0x0C) {
+                system("clear");
+                print_prompt(PATH);
+            } 
+            else {
                 if (pos < MAX_LINE_LENGTH - 1) {
                     memmove(&buffer[cursor+1], &buffer[cursor], pos - cursor + 1);
                     buffer[cursor] = ch;
@@ -317,8 +323,8 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                     printf("\r\033[K"); // Clear the current line
                     print_prompt(PATH);
 
-                    char buff1[1024 * 4];
-                    char buff2[1024 * 4];
+                    char buff1[1024];
+                    char buff2[1024];
                     struct stat stats;
                     snprintf(buff1, sizeof(buff1), "/usr/bin/%s", buffer);
                     snprintf(buff2, sizeof(buff2), "/bin/%s", buffer);

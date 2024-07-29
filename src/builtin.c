@@ -1111,8 +1111,8 @@ int PSH_TYPE(char **token_arr) // usage type <command>
         return 1;
     }
 
-    char buff1[1024 * 4];
-    char buff2[1024 * 4];
+    char buff1[1024];
+    char buff2[1024];
     struct stat stats;
     int perms = 0; // default is shell builtin
 

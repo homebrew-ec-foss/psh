@@ -64,65 +64,6 @@ int PSH_LOOP(void)
 }
 
 
-// int PSH_SCRIPT(const char *file)
-// {
-
-//     FILE *script = fopen(file, "r");
-
-//     int run = 1;
-//     size_t n = 0;
-//     char *inputline = NULL;
-//     int result = 0;
-
-//     if (script == NULL)
-//     {
-//         fprintf(stderr, "FILE open failed\n");
-//         run = 0;
-//         return -1;
-//     }
-
-//     while (run == 1)
-//     {
-//         if (getline(&inputline, &n, script) == -1)
-//         {
-//             if (feof(script))
-//             {
-//                 // Reached end of file
-//                 // feof() doesn't actually detect the end of the file itself.
-//                 // Instead, it reports whether a previous read operation has attempted
-//                 // to read past the end of the file.
-//                 break;
-//             }
-//             if (errno != 0)
-//             {
-//                 perror("getline");
-//                 result = -1;
-//             }
-//             break;
-//         }
-        
-//         // printf("getline is %s \n", inputline);
-
-//         // handle_input(&inputline, &n, PATH);
-//         // char *comment_pos = strchr(inputline, '#');
-//         // if (comment_pos) {
-//         //     *comment_pos = '\0';
-//         // }
-//         if (inputline[0] == '\0')
-//         {
-//             continue;
-//         }
-//         // char path_session[PATH_MAX];
-//         // get_session_path(path_session, sizeof(path_session), cwd);
-//         // save_history(inputline,path_session);
-//         process_commands_script(inputline, &run);
-//     }
-//     free(inputline);
-//     fclose(script);
-//     return run;
-// }
-
-
 int PSH_SCRIPT(const char *file)
 {
 

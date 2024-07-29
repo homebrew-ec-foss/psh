@@ -1,8 +1,7 @@
 // helpers.c
 #include "psh.h"
-#include <unistd.h>
-// char path_memory[PATH_MAX];
 int SIGNAL = 0;
+// char path_memory[PATH_MAX];
 
 void free_double_pointer(char **array)
 {
