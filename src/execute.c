@@ -195,7 +195,7 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
 
         if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
         {
-            fprintf(stdout, "psh: Incorrect arguments or no arguments provided. Try \"man %s\" for usage details.\n", token_arr[0], token_arr[0]);
+            fprintf(stdout, "psh: Incorrect arguments or no arguments provided. Try \"man %s\" for usage details.\n", token_arr[0]);
         }
     }
     return 1;
@@ -460,7 +460,7 @@ void execute_command(char **token_arr, int *run){
                 exit(EXIT_FAILURE);
             }
          }
-        token_arr[position] = '\0';
+        *token_arr[position] = '\0';
         
         // free array ----------------
         for (int i; temp[i] != NULL; i++)
