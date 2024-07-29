@@ -3,9 +3,10 @@
 // Unused Parameters
 int main(int argc, char **argv, char **envp)
 {
+    
     // setenv("PS1_COLOR", "\033[0m", 1); // Set default color to reset
 
-    printf("\e[1;1H\e[2J"); // basically clears the screen
+    // printf("\e[1;1H\e[2J"); // basically clears the screen
     getcwd(cwd, sizeof(cwd)); // home/$USER/psh
     strcpy(PATH, cwd);
     
@@ -36,6 +37,10 @@ int main(int argc, char **argv, char **envp)
 
 int PSH_LOOP(void)
 {
+    struct sigaction sa;
+    sa.sa_handler = handler;
+    sigaction(SIGINT, &sa, NULL);
+    
     size_t n = 0;
     int run = 1;
     char *inputline = NULL;

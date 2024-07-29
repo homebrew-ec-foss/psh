@@ -225,8 +225,15 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
     size_t cursor = 0;
     current_history = -1;
 
-
     while (1) {
+        if(SIGNAL == 1)
+        {
+            SIGNAL = 0;
+            fflush(stdout);
+            // printf("\e[1;1H\e[2J");
+            printf("SIGINT detected\n");
+            print_prompt(PATH);
+        }
         if (kbhit()) {
             char ch = getchar();
             char buff[PATH_MAX] = {0};

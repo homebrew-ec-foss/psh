@@ -24,6 +24,7 @@
 #include <termios.h>
 #include <ctype.h>
 #include <errno.h>
+#include <signal.h>
 
 
 #define MAX_VARS 100
@@ -85,6 +86,7 @@ extern char path_memory[PATH_MAX];
 extern char session_id[32];
 extern int last_command_up;
 extern char path_memory[];
+extern int SIGNAL;
 
 extern struct Variable global_vars[MAX_VARS]; // Global array to store variables
 extern int num_vars; 
@@ -178,5 +180,6 @@ char *remove_quotes(char *);
 char *expand_variables(char *);
 void handle_env_variable(char *[]);
 void get_alias_path(char *, size_t, const char *);
+void handler(int);
 
 #endif

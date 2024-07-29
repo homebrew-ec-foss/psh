@@ -1,7 +1,8 @@
 // helpers.c
 #include "psh.h"
+#include <unistd.h>
 // char path_memory[PATH_MAX];
-
+int SIGNAL = 0;
 
 void free_double_pointer(char **array)
 {
@@ -1183,4 +1184,10 @@ void handle_env_variable(char *token_arr[]) {
 
 void get_alias_path(char *path_session, size_t size, const char *cwd) {
     snprintf(path_session, size, "%s/.files/ALIAS", cwd);
+}
+
+void handler(int num)
+{
+    write(STDOUT_FILENO,"checking signals\n",64);
+    SIGNAL = 1;
 }
