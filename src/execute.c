@@ -307,7 +307,16 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
             else if (ch == 0x04 && cursor == 0) {
                 char path_session[PATH_MAX];
                 get_session_path(path_session, sizeof(path_session), cwd);
-                remove(path_session);
+                
+                if(remove(path_session) == 0) {
+                    disableRawMode();
+                    exit(atoi(getenv("?")));
+                }
+                else {
+                // printf("goto hello\n");
+                    disableRawMode();
+                    exit(0);
+                }
                 //delete_file(path_session);
                 // printf("helo world 69\n");
                 // char **buf= malloc(2* sizeof(char *));
@@ -315,8 +324,6 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                 // buf[1]=malloc(8);
                 // printf("%s",buf[1]);
                 // PSH_EXIT(buf);
-                disableRawMode();
-                exit(atoi(getenv("?")));
             }
             else {
                 if (pos < MAX_LINE_LENGTH - 1) {
