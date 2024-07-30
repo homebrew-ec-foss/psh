@@ -311,6 +311,9 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                 print_prompt(PATH);
             } 
             else if (ch == 0x04 && cursor == 0) {
+                char path_session[PATH_MAX];
+                get_session_path(path_session, sizeof(path_session), cwd);
+                delete_file(path_session);
                 printf("helo world 69\n");
                 exit(0);
             }
