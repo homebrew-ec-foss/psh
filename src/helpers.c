@@ -1,6 +1,5 @@
 // helpers.c
 #include "psh.h"
-#include <stdlib.h>
 
 volatile sig_atomic_t SIGNAL = 0;
 
