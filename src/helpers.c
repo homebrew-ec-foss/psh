@@ -1,5 +1,6 @@
 // helpers.c
 #include "psh.h"
+#include <stdlib.h>
 
 volatile sig_atomic_t SIGNAL = 0;
 
@@ -664,6 +665,7 @@ void print_prompt(const char *PATH) {
         ps1 = "\\[\\e[1;36m\\]\\u\\[\\e[0m\\]@\\[\\e[1;34m\\]PSH\\[\\e[0m\\] → \\[\\e[1;35m\\]\\W\\[\\e[0m\\]";
     }
     parse_ps1(ps1, PATH);
+    setenv("PS1", ps1, 1);
 }
 
 void load_history() {
