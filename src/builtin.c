@@ -276,7 +276,8 @@ int PSH_ECHO(char **token_arr)
                 size_t len = strlen(var_value);
                 char *buffer = (char *)malloc(len+1);
                 strcpy(buffer, var_value);
-                printf("%s", buffer);
+                strcpy(arg, buffer);
+                // printf("%s", buffer);
                 free(buffer);
             }
             else
