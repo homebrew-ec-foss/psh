@@ -1,5 +1,4 @@
 #include "psh.h"
-
 // variables
 
 //char cwd[PATH_MAX];
@@ -268,11 +267,17 @@ int PSH_ECHO(char **token_arr)
         // Variable expansion
         if (arg[0] == '$')
         {
-            char *var_name = arg + 1; // Skip the '$' sign
-            char *var_value = getenv(var_name);
+            const char *var_name = arg + 1; // Skip the '$' sign
+            const char *var_value = getenv(var_name);
+            
             if (var_value != NULL)
             {
-                strcpy(arg, var_value);
+                // mallocing so that huge variables get enough space and seg fault gets avoided
+                size_t len = strlen(var_value);
+                char *buffer = (char *)malloc(len+1);
+                strcpy(buffer, var_value);
+                printf("%s", buffer);
+                free(buffer);
             }
             else
             {
@@ -283,7 +288,7 @@ int PSH_ECHO(char **token_arr)
 
         if (i > arg_index)
         {
-            fputc(' ', output);
+            printf(" ");
         }
         fputs(arg, output);
     }
