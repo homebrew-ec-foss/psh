@@ -317,13 +317,6 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                     disableRawMode();
                     exit(0);
                 }
-                //delete_file(path_session);
-                // printf("helo world 69\n");
-                // char **buf= malloc(2* sizeof(char *));
-                // buf[0]=malloc(8);
-                // buf[1]=malloc(8);
-                // printf("%s",buf[1]);
-                // PSH_EXIT(buf);
             }
             else {
                 if (pos < MAX_LINE_LENGTH - 1) {
