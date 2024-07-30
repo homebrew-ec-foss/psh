@@ -1,22 +1,15 @@
 // main.c
 #include "psh.h"
+
 // Unused Parameters
 int main(int argc, char **argv, char **envp)
 {
-    
-    // setenv("PS1_COLOR", "\033[0m", 1); // Set default color to reset
-
-    // printf("\e[1;1H\e[2J"); // basically clears the screen
+    printf("\e[1;1H\e[2J"); // basically clears the screen
     getcwd(cwd, sizeof(cwd)); // home/$USER/psh
     strcpy(PATH, cwd);
     
     char COPY_PATH_PSHRC[PATH_MAX];
     snprintf(COPY_PATH_PSHRC, sizeof(COPY_PATH_PSHRC), "%s/.files/pshrc", cwd); // Form the path to pshrc
-
-    // strcpy(COPY_PATH_PSHRC, cwd);
-    // strcpy(COPY_PATH_PSHRC, "/.files/pshrc");
-    // printf("%s\n",PATH);
-
 
     //load pshrc
     PSH_SCRIPT(COPY_PATH_PSHRC);
@@ -35,11 +28,13 @@ int main(int argc, char **argv, char **envp)
     return 0;
 }
 
-int PSH_LOOP(void)
+int PSH_LOOP(void)          
 {
     struct sigaction sa;
-    sa.sa_handler = handler;
-    sigaction(SIGINT, &sa, NULL);
+    sa.sa_handler = sigint_handler;                          // Specify the signal handler function
+    sa.sa_flags = 0;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGINT, &sa, NULL);    // Set the action for SIGINT using the sigaction structure
     
     size_t n = 0;
     int run = 1;

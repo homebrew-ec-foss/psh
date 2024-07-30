@@ -13,9 +13,6 @@ char PATH[PATH_MAX];
 
 int PSH_EXIT(char **token_arr)
 {
-    // char PATH_DEL[PATH_MAX];
-    // strcpy(PATH_DEL, cwd);
-    // strcat(PATH_DEL, "/.files/SESSION_HISTORY_FILE");
     char path_session[PATH_MAX];
     get_session_path(path_session, sizeof(path_session), cwd);
 

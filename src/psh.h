@@ -14,7 +14,6 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
-#include <linux/limits.h>
 #include <glob.h>
 #include <time.h>
 #include <stdbool.h>
@@ -45,7 +44,6 @@
 #define BACKSPACE 127
 #define HASHMAP_SIZE 256
 
-// #define MAX_FUNCS 100
 
 // Defining Structs to hold variables and functions
 struct Variable
@@ -86,33 +84,12 @@ extern char path_memory[PATH_MAX];
 extern char session_id[32];
 extern int last_command_up;
 extern char path_memory[];
-extern int SIGNAL;
-
+extern volatile int SIGNAL;
 extern struct Variable global_vars[MAX_VARS]; // Global array to store variables
 extern int num_vars; 
-// extern int last_command_up;
-
 extern char *history[PATH_MAX];
 extern int history_count;
 extern int current_history;
-
-// extern const char *red;
-// extern const char *green;
-// extern const char *yellow;
-// extern const char *blue;
-// extern const char *magenta;
-// extern const char *cyan;
-// extern const char *white;
-// // extern const char *reset;
-// extern const char *gray;
-
-extern int color_checker;
-extern const char *color_code; //= "\033[0m";  // Default to reset color
-extern char *color;
-extern char *color_value;
-
-// struct Func global_funcs[MAX_FUNCS];
-// int num_funcs = 0;
 
 // Function Declarations
 
@@ -180,6 +157,6 @@ char *remove_quotes(char *);
 char *expand_variables(char *);
 void handle_env_variable(char *[]);
 void get_alias_path(char *, size_t, const char *);
-void handler();
+void sigint_handler(int sig);
 
 #endif

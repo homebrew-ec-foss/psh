@@ -1,10 +1,6 @@
 #include "psh.h"
 #include "colors.h"
 
-
-const char *yellow="\033[33m";
-const char *green="\033[32m";
-// const char *reset="\033[0m";
 char cwd[PATH_MAX];
 char path_memory[PATH_MAX]="";
 int last_command_up = 0;
@@ -238,13 +234,11 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
     current_history = -1;
 
     while (1) {
-        if(SIGNAL == 1)
+        if (SIGNAL)
         {
-            SIGNAL = 0;
-            // fflush(stdout);
-            // printf("\e[1;1H\e[2J");
-            printf("SIGINT detected\n");
-            print_prompt(PATH);
+            SIGNAL = 0; // Reset the signal flag
+            printf("\r\033[K"); // Clear the current line
+            print_prompt(PATH); // Prompt again     
         }
         if (kbhit()) {
             char ch = getchar();
@@ -306,7 +300,7 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                 printf("\n");
                 break;
             }
-            else if (ch == 0x0C) {
+            else if (ch == 0x0C) {              //ctrl + L
                 system("clear");
                 print_prompt(PATH);
             } 
@@ -316,7 +310,13 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                 remove(path_session);
                 //delete_file(path_session);
                 // printf("helo world 69\n");
-                exit(0);
+                // char **buf= malloc(2* sizeof(char *));
+                // buf[0]=malloc(8);
+                // buf[1]=malloc(8);
+                // printf("%s",buf[1]);
+                // PSH_EXIT(buf);
+                disableRawMode();
+                exit(atoi(getenv("?")));
             }
             else {
                 if (pos < MAX_LINE_LENGTH - 1) {
@@ -443,6 +443,7 @@ void process_commands(char *inputline, int *run){
     }
 
     free_double_pointer(commands);
+    run=0;    
 }
 
 
@@ -516,14 +517,32 @@ void execute_command(char **token_arr, int *run){
         {
 
             *run = (*builtin_func[j])(token_arr);
+            char buf;
+            if(*run==1)
+            {
+                buf=(*run-1+'0');
+            }
+            else
+            {    
+                buf=(*run+'0');
+            }
+            setenv("?", &buf, 1);
             return;
         }
     }
-
-
     if (!contains_wildcard(token_arr))
     {
+        char buf;
         *run = PSH_EXEC_EXTERNAL(token_arr);
+        if(*run==1)
+        {
+            buf=(*run-1+'0');
+        }
+        else
+        {    
+            buf=(*run+'0');
+        }
+        setenv("?", &buf, 1);
     }
 
     else

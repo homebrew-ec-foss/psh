@@ -1,8 +1,7 @@
 // helpers.c
 #include "psh.h"
-#include <unistd.h>
-int SIGNAL = 0;
-// char path_memory[PATH_MAX];
+
+volatile sig_atomic_t SIGNAL = 0;
 
 void free_double_pointer(char **array)
 {
@@ -1186,8 +1185,10 @@ void get_alias_path(char *path_session, size_t size, const char *cwd) {
     snprintf(path_session, size, "%s/.files/ALIAS", cwd);
 }
 
-void handler()
+void sigint_handler(int sig)
 {
-    write(STDOUT_FILENO,"checking signals\n",64);
+    const char *message = "SIGINT Detected\n";
+    write(STDOUT_FILENO, message, strlen(message));
     SIGNAL = 1;
+    setenv("?", "130", 1);
 }
