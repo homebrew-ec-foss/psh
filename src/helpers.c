@@ -1,7 +1,8 @@
 // helpers.c
 #include "psh.h"
-// char path_memory[PATH_MAX];
+#include <stdlib.h>
 
+volatile sig_atomic_t SIGNAL = 0;
 
 void free_double_pointer(char **array)
 {
@@ -163,7 +164,8 @@ void read_lines_reverse(const char *filename, int low_lim, int up_lim)
                 }
             }
             // Storing the line with the line number
-            asprintf(&lines[size++], "%zu %s", line_no, line);
+            lines[size++] = malloc((strlen(line) + 1) * sizeof(char));
+            sprintf(lines[size - 1], "%zu %s", line_no, line);
         }
         line_no++;
         if (line_no > up_lim)
@@ -663,6 +665,7 @@ void print_prompt(const char *PATH) {
         ps1 = "\\[\\e[1;36m\\]\\u\\[\\e[0m\\]@\\[\\e[1;34m\\]PSH\\[\\e[0m\\] → \\[\\e[1;35m\\]\\W\\[\\e[0m\\]";
     }
     parse_ps1(ps1, PATH);
+    setenv("PS1", ps1, 1);
 }
 
 void load_history() {
@@ -1187,4 +1190,12 @@ void handle_env_variable(char *token_arr[]) {
 
 void get_alias_path(char *path_session, size_t size, const char *cwd) {
     snprintf(path_session, size, "%s/.files/ALIAS", cwd);
+}
+
+void sigint_handler(int sig)
+{
+    const char *message = "SIGINT Detected\n";
+    write(STDOUT_FILENO, message, strlen(message));
+    SIGNAL = 1;
+    setenv("?", "130", 1);
 }

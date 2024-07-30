@@ -1,10 +1,6 @@
-#include "colors.h"
 #include "psh.h"
+#include "colors.h"
 
-
-const char *yellow="\033[33m";
-const char *green="\033[32m";
-// const char *reset="\033[0m";
 char cwd[PATH_MAX];
 char path_memory[PATH_MAX]="";
 int last_command_up = 0;
@@ -164,10 +160,20 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
 {
     pid_t pid, wpid;
     int status;
+    sigset_t sigset, oldset;
+
+    // Blocking SIGINT in the parent process
+    sigemptyset(&sigset);
+    sigaddset(&sigset, SIGINT);
+    sigprocmask(SIG_BLOCK, &sigset, &oldset);
 
     pid = fork();
     if (pid == 0)
     {
+        // Restoring the default SIGINT behavior in the child process
+        sigprocmask(SIG_SETMASK, &oldset, NULL);
+        signal(SIGINT, SIG_DFL);
+
         // Child process
         if (execvp(token_arr[0], token_arr) == -1)
         {
@@ -193,14 +199,16 @@ int PSH_EXEC_EXTERNAL(char **token_arr)
             }
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
 
+        // Restoring the old signal mask
+        sigprocmask(SIG_SETMASK, &oldset, NULL);
+
         if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
         {
-            fprintf(stdout, "psh: Incorrect arguments or no arguments provided. Try \"man %s\" for usage details.\n", token_arr[0], token_arr[0]);
+            fprintf(stdout, "psh: Incorrect arguments or no arguments provided. Try \"man %s\" for usage details.\n", token_arr[0]);
         }
     }
     return 1;
 }
-
 
 void handle_input(char **inputline, size_t *n, const char *PATH) {
 
@@ -220,17 +228,23 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
 
     enableRawMode();
 
-    char buffer[PATH_MAX] = {0};
+    char buffer[1024] = {0};
     size_t pos = 0;
     size_t cursor = 0;
     current_history = -1;
 
-
     while (1) {
+        if (SIGNAL)
+        {
+            SIGNAL = 0; // Reset the signal flag
+            printf("\r\033[K"); // Clear the current line
+            print_prompt(PATH); // Prompt again     
+        }
         if (kbhit()) {
             char ch = getchar();
             char buff[PATH_MAX] = {0};
             strncat(buff, &ch, 1);
+            
             if (ch == '\033') { // ESC character
                 getchar(); // skip the [
                 ch = getchar();
@@ -285,7 +299,26 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                 buffer[pos] = '\0';
                 printf("\n");
                 break;
-            } else {
+            }
+            else if (ch == 0x0C) {              //ctrl + L
+                system("clear");
+                print_prompt(PATH);
+            } 
+            else if (ch == 0x04 && cursor == 0) {
+                char path_session[PATH_MAX];
+                get_session_path(path_session, sizeof(path_session), cwd);
+                remove(path_session);
+                //delete_file(path_session);
+                // printf("helo world 69\n");
+                // char **buf= malloc(2* sizeof(char *));
+                // buf[0]=malloc(8);
+                // buf[1]=malloc(8);
+                // printf("%s",buf[1]);
+                // PSH_EXIT(buf);
+                disableRawMode();
+                exit(atoi(getenv("?")));
+            }
+            else {
                 if (pos < MAX_LINE_LENGTH - 1) {
                     memmove(&buffer[cursor+1], &buffer[cursor], pos - cursor + 1);
                     buffer[cursor] = ch;
@@ -298,8 +331,8 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                     printf("\r\033[K"); // Clear the current line
                     print_prompt(PATH);
 
-                    char buff1[1024 * 4];
-                    char buff2[1024 * 4];
+                    char buff1[1024];
+                    char buff2[1024];
                     struct stat stats;
                     snprintf(buff1, sizeof(buff1), "/usr/bin/%s", buffer);
                     snprintf(buff2, sizeof(buff2), "/bin/%s", buffer);
@@ -410,6 +443,7 @@ void process_commands(char *inputline, int *run){
     }
 
     free_double_pointer(commands);
+    run=0;    
 }
 
 
@@ -472,14 +506,32 @@ void execute_command(char **token_arr, int *run){
         {
 
             *run = (*builtin_func[j])(token_arr);
+            char buf;
+            if(*run==1)
+            {
+                buf=(*run-1+'0');
+            }
+            else
+            {    
+                buf=(*run+'0');
+            }
+            setenv("?", &buf, 1);
             return;
         }
     }
-
-
     if (!contains_wildcard(token_arr))
     {
+        char buf;
         *run = PSH_EXEC_EXTERNAL(token_arr);
+        if(*run==1)
+        {
+            buf=(*run-1+'0');
+        }
+        else
+        {    
+            buf=(*run+'0');
+        }
+        setenv("?", &buf, 1);
     }
 
     else
