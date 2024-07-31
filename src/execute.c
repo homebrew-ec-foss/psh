@@ -318,6 +318,24 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                     exit(0);
                 }
             }
+            else if (ch == '\t') {
+                size_t usr_bin_count;
+                char **commands = get_commands_from_usr_bin(&usr_bin_count);
+
+                // char input[MAX_COMMAND_LENGTH];
+                // printf("Enter a command: ");
+            
+                // input[strcspn(input, "\n")] = '\0'; // Remove trailing newline
+
+                autocomplete(buffer, commands, usr_bin_count);
+
+                // Clean up
+                for (size_t i = 0; i < usr_bin_count; i++) {
+                    free(commands[i]);
+                }
+                free(commands);
+
+            }
             else {
                 if (pos < MAX_LINE_LENGTH - 1) {
                     memmove(&buffer[cursor+1], &buffer[cursor], pos - cursor + 1);

@@ -24,6 +24,8 @@
 #include <ctype.h>
 #include <errno.h>
 #include <signal.h>
+#include <dirent.h>
+#include <stdint.h>
 
 
 #define MAX_VARS 100
@@ -43,6 +45,8 @@
 #define MAX_LINE_LENGTH 1024
 #define BACKSPACE 127
 #define HASHMAP_SIZE 256
+
+#define MAX_COMMAND_LENGTH 50
 
 
 // Defining Structs to hold variables and functions
@@ -157,6 +161,14 @@ char *remove_quotes(char *);
 char *expand_variables(char *);
 void handle_env_variable(char *[]);
 void get_alias_path(char *, size_t, const char *);
+
+//signal
 void sigint_handler(int sig);
+
+//autocomplete
+char **get_commands_from_usr_bin(size_t *);
+int min(int , int , int );
+int levenshtein_distance(const char *, const char *);
+void autocomplete(const char *, char **, size_t );
 
 #endif

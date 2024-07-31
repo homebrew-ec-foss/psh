@@ -9,7 +9,7 @@ int main(int argc, char **argv, char **envp)
     strcpy(PATH, cwd);
     
     char COPY_PATH_PSHRC[PATH_MAX];
-    snprintf(COPY_PATH_PSHRC, sizeof(COPY_PATH_PSHRC), "%s/.files/pshrc", cwd); // Form the path to pshrc
+    snprintf(COPY_PATH_PSHRC, sizeof(COPY_PATH_PSHRC), "%s/.files/.pshrc", cwd); // Form the path to pshrc
 
     //load pshrc
     PSH_SCRIPT(COPY_PATH_PSHRC);
@@ -38,7 +38,7 @@ int PSH_LOOP(void)
     
     size_t n = 0;
     int run = 1;
-    char *inputline = NULL;
+    char *inputline = malloc(PATH_MAX);
     strcpy(path_memory, cwd);
     strcat(path_memory, "/.files/MEMORY_HISTORY_FILE");
 
