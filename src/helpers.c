@@ -1198,3 +1198,39 @@ void sigint_handler(int sig)
     SIGNAL = 1;
     setenv("?", "130", 1);
 }
+
+char **parse_pathtokens(char *path_token) {
+    size_t bufsize = 64, position = 0;
+    char **path_token_arr = malloc(bufsize * sizeof(char *));
+    if (!path_token_arr) {
+        fprintf(stderr, "psh: allocation error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *token = strtok(path_token, "/");
+    while (token != NULL) {
+        if (position >= bufsize) {
+            bufsize += 64;
+            path_token_arr = realloc(path_token_arr, bufsize * sizeof(char *));
+            if (!path_token_arr) {
+                fprintf(stderr, "psh: allocation error\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        
+        path_token_arr[position] = malloc((strlen(token) + 1) * sizeof(char));
+        if (!path_token_arr[position]) {
+            fprintf(stderr, "psh: allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        strcpy(path_token_arr[position], token);
+        position++;
+        
+        token = strtok(NULL, "/");
+    }
+    
+    path_token_arr[position] = NULL; 
+    free(token);
+    
+    return path_token_arr;
+}
