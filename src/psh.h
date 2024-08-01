@@ -169,6 +169,5 @@ void sigint_handler(int sig);
 char **get_commands_from_usr_bin(size_t *);
 int min(int , int , int );
 int levenshtein_distance(const char *, const char *);
-void autocomplete(const char *, char **, size_t );
-
+void autocomplete(const char *, char **, size_t , char *, size_t *, size_t *);
 #endif

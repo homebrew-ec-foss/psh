@@ -322,19 +322,17 @@ void handle_input(char **inputline, size_t *n, const char *PATH) {
                 size_t usr_bin_count;
                 char **commands = get_commands_from_usr_bin(&usr_bin_count);
 
-                // char input[MAX_COMMAND_LENGTH];
-                // printf("Enter a command: ");
-            
-                // input[strcspn(input, "\n")] = '\0'; // Remove trailing newline
-
-                autocomplete(buffer, commands, usr_bin_count);
-
+                autocomplete(buffer, commands, usr_bin_count, buffer, &pos, &cursor);
+                
                 // Clean up
                 for (size_t i = 0; i < usr_bin_count; i++) {
                     free(commands[i]);
                 }
                 free(commands);
-
+                printf("\r\033[K");
+                print_prompt(PATH);
+                printf("%s", buffer);
+                fflush(stdout);
             }
             else {
                 if (pos < MAX_LINE_LENGTH - 1) {
@@ -524,32 +522,34 @@ void execute_command(char **token_arr, int *run){
         {
 
             *run = (*builtin_func[j])(token_arr);
-            char buf;
+            char buf[2];
             if(*run==1)
             {
-                buf=(*run-1+'0');
+                buf[0] = (*run - 1 + '0');
             }
             else
             {    
-                buf=(*run+'0');
+                buf[0]=(*run+'0');
             }
-            setenv("?", &buf, 1);
+            buf[1]='\0';
+            setenv("?", buf, 1);
             return;
         }
     }
     if (!contains_wildcard(token_arr))
     {
-        char buf;
+        char buf[2];
         *run = PSH_EXEC_EXTERNAL(token_arr);
         if(*run==1)
         {
-            buf=(*run-1+'0');
+            buf[0] = (*run - 1 + '0');
         }
         else
         {    
-            buf=(*run+'0');
+            buf[0]=(*run+'0');
         }
-        setenv("?", &buf, 1);
+        buf[1]='\0';
+        setenv("?", buf, 1);
     }
 
     else

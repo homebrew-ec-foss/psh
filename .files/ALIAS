@@ -1,2 +1,0 @@
-l=ls
-ls=ls --color=auto

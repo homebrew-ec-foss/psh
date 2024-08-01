@@ -1201,8 +1201,7 @@ void sigint_handler(int sig)
 }
 
 char **get_commands_from_usr_bin(size_t *count) {
-    
-    DIR *dir, *dir2;
+    DIR *dir;
     struct dirent *entry;
     size_t num_files = 0;
     size_t capacity = 10;
@@ -1212,44 +1211,91 @@ char **get_commands_from_usr_bin(size_t *count) {
         exit(EXIT_FAILURE);
     }
 
-    dir = opendir("/usr/bin");
-    dir2 = opendir("/usr/local/bin");
-    if (dir == NULL) {
-        perror("opendir");
+    char *path_env = getenv("PATH");
+    if (path_env == NULL) {
+        perror("getenv");
         free(files);
         exit(EXIT_FAILURE);
     }
 
-    while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_REG) { // Only regular files
-            if (num_files >= capacity) {
-                capacity *= 2;
-                char **temp = realloc(files, capacity * sizeof(char *));
-                if (temp == NULL) {
-                    perror("realloc");
+    char *path = strdup(path_env);
+    if (path == NULL) {
+        perror("strdup");
+        free(files);
+        exit(EXIT_FAILURE);
+    }
+
+    char *dir_path = strtok(path, ":");
+    while (dir_path != NULL) {
+        dir = opendir(dir_path);
+        if (dir == NULL) {
+            dir_path = strtok(NULL, ":");
+            continue;
+        }
+
+        while ((entry = readdir(dir)) != NULL) {
+            if (entry->d_type == DT_REG || entry->d_type == DT_LNK) { // Regular files or symlinks
+                if (num_files >= capacity) {
+                    capacity *= 2;
+                    char **temp = realloc(files, capacity * sizeof(char *));
+                    if (temp == NULL) {
+                        perror("realloc");
+                        for (size_t i = 0; i < num_files; i++) {
+                            free(files[i]);
+                        }
+                        free(files);
+                        closedir(dir);
+                        free(path);
+                        exit(EXIT_FAILURE);
+                    }
+                    files = temp;
+                }
+                files[num_files] = strdup(entry->d_name);
+                if (files[num_files] == NULL) {
+                    perror("strdup");
                     for (size_t i = 0; i < num_files; i++) {
                         free(files[i]);
                     }
                     free(files);
                     closedir(dir);
+                    free(path);
                     exit(EXIT_FAILURE);
                 }
-                files = temp;
+                num_files++;
             }
-            files[num_files] = strdup(entry->d_name);
-            if (files[num_files] == NULL) {
-                perror("strdup");
-                for (size_t i = 0; i < num_files; i++) {
-                    free(files[i]);
-                }
-                free(files);
-                closedir(dir);
-                exit(EXIT_FAILURE);
-            }
-            num_files++;
         }
+        closedir(dir);
+        dir_path = strtok(NULL, ":");
     }
-    closedir(dir);
+
+    free(path);
+
+    // Resize the files array to accommodate the built-in commands
+    capacity = num_files + size_builtin_str;
+    char **temp = realloc(files, capacity * sizeof(char *));
+    if (temp == NULL) {
+        perror("realloc");
+        for (size_t i = 0; i < num_files; i++) {
+            free(files[i]);
+        }
+        free(files);
+        exit(EXIT_FAILURE);
+    }
+    files = temp;
+
+    // Copy built-in commands to the files array
+    for (size_t i = 0; i < size_builtin_str; i++) {
+        files[num_files] = strdup(builtin_str[i]);
+        if (files[num_files] == NULL) {
+            perror("strdup");
+            for (size_t j = 0; j < num_files; j++) {
+                free(files[j]);
+            }
+            free(files);
+            exit(EXIT_FAILURE);
+        }
+        num_files++;
+    }
 
     *count = num_files;
     return files;
@@ -1289,7 +1335,7 @@ int levenshtein_distance(const char *s1, const char *s2) {
     return result;
 }
 
-void autocomplete(const char *input, char **commands, size_t num_commands) {
+void autocomplete(const char *input, char **commands, size_t num_commands, char *buffer, size_t *pos, size_t *cursor) {
     if (num_commands == 0) {
         printf("No commands to autocomplete.\n");
         return;
@@ -1302,14 +1348,33 @@ void autocomplete(const char *input, char **commands, size_t num_commands) {
         exit(EXIT_FAILURE);
     }
 
+    size_t match_count = 0;
+    size_t last_match_index = 0;
+
     for (size_t i = 0; i < num_commands; i++) {
         if (strncmp(input, commands[i], strlen(input)) == 0) {
             prefix_matches[i] = 1; // Exact prefix match
-        } else {
+            match_count++;
+            last_match_index = i;
+        } 
+        else {
             prefix_matches[i] = 0; // No exact prefix match
         }
         distances[i] = levenshtein_distance(input, commands[i]);
     }
+    // If there's only one match, replace the buffer
+    if (match_count == 1) {
+        strncpy(buffer, commands[last_match_index], MAX_LINE_LENGTH - 1);
+        buffer[MAX_LINE_LENGTH - 1] = '\0';
+        *pos = strlen(buffer);
+        *cursor = *pos;
+        // printf("\r\033[K%s", buffer);
+        // fflush(stdout);
+        free(distances);
+        free(prefix_matches);
+        return;
+    }
+
 
     // Sort commands by prefix match first, then by distance
     for (size_t i = 0; i < num_commands && i < SIZE_MAX; i++) {
