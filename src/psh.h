@@ -158,5 +158,6 @@ char *expand_variables(char *);
 void handle_env_variable(char *[]);
 void get_alias_path(char *, size_t, const char *);
 void sigint_handler(int sig);
+char **parse_pathtokens(char *);
 
 #endif
