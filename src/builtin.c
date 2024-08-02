@@ -1,4 +1,5 @@
 #include "psh.h"
+#include <string.h>
 // variables
 
 //char cwd[PATH_MAX];
@@ -227,7 +228,9 @@ int PSH_ECHO(char **token_arr)
 
     for (int i = arg_index; token_arr[i] != NULL; i++)
     {
-        char *arg = token_arr[i];
+        char *arg = malloc(PATH_MAX);
+        // char *arg = strdup(token_arr[i]);
+        strcpy(arg, token_arr[i]);
         char *write_pos = arg;
 
         // Remove all quotes from the argument
@@ -306,6 +309,7 @@ int PSH_ECHO(char **token_arr)
             printf(" ");
         }
         fputs(arg, output);
+        free(arg);
     }
 
     if (newline)
