@@ -86,7 +86,7 @@ int PSH_CD(char **token_arr)
         strncpy(localdir, PREV_DIR, PATH_MAX - 1);
         localdir[PATH_MAX - 1] = '\0';
     }
-    else if (strcmp(pathtoken, "..") == 0)
+    else if (strstr(pathtoken, ".."))
     {
         if (strcmp(localdir, "/") == 0) // For path inside / or root
         {
@@ -94,13 +94,27 @@ int PSH_CD(char **token_arr)
         }
         else
         {
-            remove_last_component(localdir);
-            if (!strcmp(localdir, ""))
+            char **path_token_arr = parse_pathtokens(pathtoken); 
+            for (int i = 0; path_token_arr[i] != NULL; i++)
             {
-                strcpy(localdir, "/");
+                if (strcmp(path_token_arr[i], "..") == 0)
+                {
+                    remove_last_component(localdir);
+                    if (!strcmp(localdir, ""))
+                    {
+                        strcpy(localdir, "/");
+                    }
+                }
+                else
+                {
+                    strcat(localdir, "/");
+                    strcat(localdir, path_token_arr[i]);
+                }
             }
+            free_double_pointer(path_token_arr);
         }
     }
+
     else if (strcmp(pathtoken, "./") == 0)
     {
         if (strcmp(localdir, "/") == 0) // For path inside / or root
@@ -1257,6 +1271,10 @@ int PSH_ALIAS(char **token_arr)
     // printf("ALIAS PATH: %s\n", ALIAS);
     // Initializing HashMap
     HashMap *map = create_map(HASHMAP_SIZE);
+    if (!map)
+    {
+        perror("Failed to create HashMap");
+    }
     load_aliases(map, ALIAS);
     if (token_arr[1] == NULL || strcmp(token_arr[1], "-p") == 0)
     {
@@ -1269,6 +1287,7 @@ int PSH_ALIAS(char **token_arr)
                     current = current->next;
                 }
             }
+                       
     } 
     else if (strchr(token_arr[1], '=')) 
     {
@@ -1308,6 +1327,10 @@ int PSH_UNALIAS(char **token_arr)
     get_alias_path(ALIAS, sizeof(ALIAS), cwd);
     // Initializing HashMap
     HashMap *map = create_map(HASHMAP_SIZE);
+    if (!map)
+    {
+        perror("Failed to create HashMap");
+    }
     load_aliases(map, ALIAS);
     if (token_arr[1] == NULL)
     {

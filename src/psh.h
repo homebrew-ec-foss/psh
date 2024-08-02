@@ -164,6 +164,7 @@ void get_alias_path(char *, size_t, const char *);
 
 //signal
 void sigint_handler(int sig);
+char **parse_pathtokens(char *);
 
 //autocomplete
 char **get_commands_from_usr_bin(size_t *);

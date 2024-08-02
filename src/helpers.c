@@ -998,8 +998,7 @@ char **split_strings(const char *string) {
         exit(EXIT_FAILURE);
     }
 
-    size_t bufsize = 64;
-    int position = 0;
+    size_t bufsize = 64, position = 0;
     char **split_arr = malloc(bufsize * sizeof(char *));
     if (!split_arr) {
         fprintf(stderr, "psh: allocation error\n");
@@ -1013,10 +1012,8 @@ char **split_strings(const char *string) {
         if (!split_arr[position]) {
             fprintf(stderr, "psh: strdup allocation error\n");
             free(str);
-            for (int i = 0; i < position; i++) {
-                free(split_arr[i]);
-            }
-            free(split_arr);
+            free(token);
+            free_double_pointer(split_arr);
             exit(EXIT_FAILURE);
         }
         position++;
@@ -1026,16 +1023,15 @@ char **split_strings(const char *string) {
             if (!split_arr) {
                 fprintf(stderr, "psh: allocation error\n");
                 free(str);
-                for (int i = 0; i < position; i++) {
-                    free(split_arr[i]);
-                }
-                free(split_arr);
+                free(token);
+                free_double_pointer(split_arr);
                 exit(EXIT_FAILURE);
             }
         }
         token = strtok(NULL, " ");
     }
     split_arr[position] = NULL;
+    free(token);
     free(str);
     return split_arr;
 }
@@ -1043,8 +1039,7 @@ char **split_strings(const char *string) {
 char **replace_alias(HashMap *map, char **token_arr) {
     const char *command = get_alias_command(map, token_arr[0]);
     if (command) {
-        size_t bufsize = 64;
-        int position = 0;
+        size_t bufsize = 64, position = 0;
         char **new_token_arr = malloc(bufsize * sizeof(char *));
         if (!new_token_arr) {
             fprintf(stderr, "psh: allocation error\n");
@@ -1057,11 +1052,8 @@ char **replace_alias(HashMap *map, char **token_arr) {
             if (!new_token_arr[position])
             {
                 fprintf(stderr, "psh: strdup allocation error\n");
-                for (int i = 0; i < position; i++) 
-                {
-                    free(new_token_arr[i]);
-                }
-                free(new_token_arr);
+                free_double_pointer(new_token_arr);
+                free_double_pointer(temp_arr);
                 exit(EXIT_FAILURE);
             }
             position++;
@@ -1072,11 +1064,8 @@ char **replace_alias(HashMap *map, char **token_arr) {
                 if (!new_token_arr) 
                 {
                     fprintf(stderr, "psh: allocation error\n");
-                    for (int i = 0; i < position; i++) 
-                    {
-                        free(new_token_arr[i]);
-                    }
-                    free(new_token_arr);
+                    free_double_pointer(new_token_arr);
+                    free_double_pointer(temp_arr);
                     exit(EXIT_FAILURE);
                 }
             }
@@ -1087,10 +1076,8 @@ char **replace_alias(HashMap *map, char **token_arr) {
             new_token_arr[position] = strdup(token_arr[i]);
             if (!new_token_arr[position]) {
                 fprintf(stderr, "psh: strdup allocation error\n");
-                for (int j = 0; j < position; j++) {
-                    free(new_token_arr[j]);
-                }
-                free(new_token_arr);
+                free_double_pointer(new_token_arr);
+                free_double_pointer(temp_arr);
                 //exit(EXIT_FAILURE);
             }
             position++;
@@ -1100,10 +1087,8 @@ char **replace_alias(HashMap *map, char **token_arr) {
                 new_token_arr = realloc(new_token_arr, bufsize * sizeof(char *));
                 if (!new_token_arr) {
                     fprintf(stderr, "psh: allocation error\n");
-                    for (int j = 0; j < position; j++) {
-                        free(new_token_arr[j]);
-                    }
-                    free(new_token_arr);
+                    free_double_pointer(new_token_arr);
+                    free_double_pointer(temp_arr);
                     //exit(EXIT_FAILURE);
                 }
             }
@@ -1111,10 +1096,7 @@ char **replace_alias(HashMap *map, char **token_arr) {
         new_token_arr[position] = NULL;
 
         // Free temp_arr
-        for (i = 0; temp_arr[i] != NULL; i++) {
-            free(temp_arr[i]);
-        }
-        free(temp_arr);
+        free_double_pointer(temp_arr);
 
         return new_token_arr;
     } else {
@@ -1401,11 +1383,49 @@ void autocomplete(const char *input, char **commands, size_t num_commands, char 
 
     // printf("Autocomplete suggestions for '%s':\n", input);
     printf("\n");
-    for (size_t i = 0; i < num_commands && i < 3; i++) {
-        
-        printf("%s\n", commands[i]);
+    for (size_t i = 0; i < num_commands && i < 3; i++) 
+    {    
+        printf("%s%s", commands[i],"   ");
     }
+    printf("\n");
 
     free(distances);
     free(prefix_matches);
 }
+
+char **parse_pathtokens(char *path_token) {
+    size_t bufsize = 64, position = 0;
+    char **path_token_arr = malloc(bufsize * sizeof(char *));
+    if (!path_token_arr) {
+        fprintf(stderr, "psh: allocation error\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char *token = strtok(path_token, "/");
+    while (token != NULL) {
+        if (position >= bufsize) {
+            bufsize += 64;
+            path_token_arr = realloc(path_token_arr, bufsize * sizeof(char *));
+            if (!path_token_arr) {
+                fprintf(stderr, "psh: allocation error\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        
+        path_token_arr[position] = malloc((strlen(token) + 1) * sizeof(char));
+        if (!path_token_arr[position]) {
+            fprintf(stderr, "psh: allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        strcpy(path_token_arr[position], token);
+        position++;
+        
+        token = strtok(NULL, "/");
+    }
+    
+    path_token_arr[position] = NULL; 
+    free(token);
+    
+    return path_token_arr;
+}
+
