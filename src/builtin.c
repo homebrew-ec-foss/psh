@@ -1253,6 +1253,10 @@ int PSH_ALIAS(char **token_arr)
     // printf("ALIAS PATH: %s\n", ALIAS);
     // Initializing HashMap
     HashMap *map = create_map(HASHMAP_SIZE);
+    if (!map)
+    {
+        perror("Failed to create HashMap");
+    }
     load_aliases(map, ALIAS);
     if (token_arr[1] == NULL || strcmp(token_arr[1], "-p") == 0)
     {
@@ -1265,6 +1269,7 @@ int PSH_ALIAS(char **token_arr)
                     current = current->next;
                 }
             }
+                       
     } 
     else if (strchr(token_arr[1], '=')) 
     {
@@ -1304,6 +1309,10 @@ int PSH_UNALIAS(char **token_arr)
     get_alias_path(ALIAS, sizeof(ALIAS), cwd);
     // Initializing HashMap
     HashMap *map = create_map(HASHMAP_SIZE);
+    if (!map)
+    {
+        perror("Failed to create HashMap");
+    }
     load_aliases(map, ALIAS);
     if (token_arr[1] == NULL)
     {
