@@ -10,7 +10,7 @@ bin  CODE_OF_CONDUCT.md  LICENSE  Makefile  README.md  script.sh  src
 
 ## Contributors:
 - [Aditya R](https://github.com/wiz)
-- [Krishna Kumar](https://github.com/Pro69696969)
+- [Krishna Kumar](https://github.com/Pro696969)
 - [Alayna Monteiro](https://github.com/AlaynaMonteiro)
 - [Sumithra Suresh](https://github.com/2sumithrasuresh)
 - [Siddhartha Rao](https://github.com/SiddharthaRao)
