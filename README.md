@@ -24,7 +24,7 @@ bin  CODE_OF_CONDUCT.md  LICENSE  Makefile  README.md  script.sh  src
 ## Run locally
 
 ```sh
-git clone https://github.com/psh-shell/psh; cd psh
+git clone https://github.com/homebrew-ec-foss/psh; cd psh
 make run
 ```
 
@@ -34,3 +34,4 @@ make run
 - [week-2](docs/slides/week-2.pdf)
 - [week-3](docs/slides/week-3.pdf)
 - [week-4](docs/slides/week-4.pdf)
+- [week-5](docs/slides/week-5.pdf) (final review)

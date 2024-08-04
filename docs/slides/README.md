@@ -28,7 +28,10 @@ We have implemented the basic structure of a shell and execution of some built-i
 
 [slides](week-3.pdf)
 
-## week-3
+## week-4
 
 [slides](week-4.pdf)
 
+## week-5 (final review)
+
+[slides](week-5.pdf)
