@@ -1,5 +1,4 @@
 #include "psh.h"
-#include <string.h>
 // variables
 
 //char cwd[PATH_MAX];
