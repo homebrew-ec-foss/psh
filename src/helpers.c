@@ -39,7 +39,6 @@ void get_last_path_component(const char *full_path, char *last_component)
     }
 }
 
-// Function to read lines
 void read_lines(const char *filename, int low_lim, int up_lim)
 {
     FILE *file = fopen(filename, "r");
@@ -74,7 +73,6 @@ void read_lines(const char *filename, int low_lim, int up_lim)
     }
 }
 
-// Function to read lines without displaying the numbers
 void read_lines_wo_no(const char *filename, int low_lim, int up_lim)
 {
     FILE *file = fopen(filename, "r");
@@ -109,7 +107,6 @@ void read_lines_wo_no(const char *filename, int low_lim, int up_lim)
     }
 }
 
-// Function to count lines
 int count_lines(const char *filename)
 {
     FILE *fp = fopen(filename, "r");
@@ -189,7 +186,6 @@ void read_lines_reverse(const char *filename, int low_lim, int up_lim)
     free(lines);
 }
 
-// Function to remove a specific line
 void remove_line(const char *filename, size_t line_to_remove)
 {
     FILE *file = fopen(filename, "r");
@@ -236,16 +232,12 @@ void delete_file(const char *filename)
 void clear_session_history()
 {
     char MEMORY_HISTORY_FILE[PATH_MAX];
-    char SESSION_HISTORY_FILE[PATH_MAX];
+    char path_session[PATH_MAX];
+    get_session_path(path_session, sizeof(path_session), cwd);
 
     strcpy(path_memory, cwd);
     strcat(path_memory, "/.files/MEMORY_HISTORY_FILE");
     strcpy(MEMORY_HISTORY_FILE, path_memory);
-
-    char path_session[PATH_MAX];
-    strcpy(path_session, cwd);
-    strcat(path_session, "/.files/SESSION_HISTORY_FILE");
-    strcpy(SESSION_HISTORY_FILE, path_session);
 
     FILE *global_fp, *session_fp, *temp_fp;
     char *global_line = NULL, *session_line = NULL;
@@ -253,9 +245,8 @@ void clear_session_history()
     ssize_t global_read, session_read;
     int found;
 
-    // Open the files
     global_fp = fopen(MEMORY_HISTORY_FILE, "r");
-    session_fp = fopen(SESSION_HISTORY_FILE, "r");
+    session_fp = fopen(path_session, "r");
     temp_fp = fopen("temp_history_file.txt", "w");
 
     if (global_fp == NULL || session_fp == NULL || temp_fp == NULL)
@@ -264,7 +255,6 @@ void clear_session_history()
         exit(EXIT_FAILURE);
     }
 
-    // Read global history and remove session history lines
     while ((global_read = getline(&global_line, &global_len, global_fp)) != -1)
     {
         rewind(session_fp); // Reset session file pointer for each global line
@@ -284,21 +274,18 @@ void clear_session_history()
         }
     }
 
-    // Free allocated memory and close files
     free(global_line);
     free(session_line);
     fclose(global_fp);
     fclose(session_fp);
     fclose(temp_fp);
 
-    // Replace global history file with the updated one
     remove(MEMORY_HISTORY_FILE);
     rename("temp_history_file.txt", MEMORY_HISTORY_FILE);
 
-    // Clear session history file
-    temp_fp = fopen(SESSION_HISTORY_FILE, "w");
+    temp_fp = fopen(path_session, "w");
     fclose(temp_fp);
-    printf("Session history cleared.\n");
+    printf("Session history cleared\n");
 }
 
 char *expand_history(const char *arg, FILE *history_file)
