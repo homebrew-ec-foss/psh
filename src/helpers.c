@@ -55,12 +55,12 @@ void read_lines(const char *filename, int low_lim, int up_lim)
 
     while ((getline(&line, &len, file) != -1) && line != NULL)
     {
-        if (line_no >= low_lim && line_no <= up_lim)
+        if (line_no >= (size_t)low_lim && line_no <= (size_t)up_lim)
         {
             printf("%zu %s", line_no, line);
         }
         line_no++;
-        if (line_no > up_lim)
+        if (line_no > (size_t)up_lim)
         {
             break;
         }
@@ -90,12 +90,12 @@ void read_lines_wo_no(const char *filename, int low_lim, int up_lim)
 
     while (getline(&line, &len, file) != -1)
     {
-        if (line_no >= low_lim && line_no <= up_lim)
+        if (line_no >= (size_t)low_lim && line_no <= (size_t)up_lim)
         {
             printf("%s", line);
         }
         line_no++;
-        if (line_no > up_lim)
+        if (line_no > (size_t)up_lim)
         {
             break;
         }
@@ -149,7 +149,7 @@ void read_lines_reverse(const char *filename, int low_lim, int up_lim)
 
     while (getline(&line, &len, file) != -1)
     {
-        if (line_no >= low_lim && line_no <= up_lim)
+        if (line_no >= (size_t)low_lim && line_no <= (size_t)up_lim)
         {
             if (size == capacity)
             {
@@ -168,7 +168,7 @@ void read_lines_reverse(const char *filename, int low_lim, int up_lim)
             sprintf(lines[size - 1], "%zu %s", line_no, line);
         }
         line_no++;
-        if (line_no > up_lim)
+        if (line_no > (size_t)up_lim)
         {
             break;
         }
@@ -225,7 +225,8 @@ void remove_line(const char *filename, size_t line_to_remove)
     }
 }
 
-void delete_file(const char *filename){
+void delete_file(const char *filename)
+{
     if (remove(filename) != 0)
     {
         perror("Error deleting file");
@@ -352,7 +353,7 @@ void read_lines_reverse_wo_no(const char *filename, int low_lim, int up_lim)
 
     while (getline(&line, &len, file) != -1)
     {
-        if (line_no >= low_lim && line_no <= up_lim)
+        if (line_no >= (size_t)low_lim && line_no <= (size_t)up_lim)
         {
             if (size == capacity)
             {
@@ -370,7 +371,7 @@ void read_lines_reverse_wo_no(const char *filename, int low_lim, int up_lim)
             lines[size++] = strdup(line);
         }
         line_no++;
-        if (line_no > up_lim)
+        if (line_no > (size_t)up_lim)
         {
             break;
         }
@@ -570,11 +571,13 @@ char *process_for_loop(char *loop_command, int *run)
     return commands_end + 4; // Return the position after "done"
 }
 
-void get_last_line(char **inputline) {
+void get_last_line(char **inputline)
+{
     last_command_up = 1;
     FILE *fp1 = fopen(path_memory, "r");
 
-    if (fp1 == NULL) {
+    if (fp1 == NULL)
+    {
         perror("Error opening file");
         return;
     }
@@ -583,7 +586,8 @@ void get_last_line(char **inputline) {
     char lastLine[MAX_LINE_LENGTH] = "";
 
     // Read each line and store the last one in lastLine
-    while (fgets(line, sizeof(line), fp1)) {
+    while (fgets(line, sizeof(line), fp1))
+    {
         strcpy(lastLine, line);
     }
 
@@ -591,76 +595,88 @@ void get_last_line(char **inputline) {
 
     // Remove newline character if present
     size_t len = strlen(lastLine);
-    if (len > 0 && lastLine[len-1] == '\n') {
-        lastLine[len-1] = '\0';
+    if (len > 0 && lastLine[len - 1] == '\n')
+    {
+        lastLine[len - 1] = '\0';
     }
 
     // Allocate memory for inputline and copy lastLine
     *inputline = strdup(lastLine);
-    if (*inputline == NULL) {
+    if (*inputline == NULL)
+    {
         perror("Memory allocation failed");
         exit(EXIT_FAILURE);
     }
 }
 
-void parse_ps1(const char *ps1, const char *cwd) {
+void parse_ps1(const char *ps1, const char *cwd)
+{
     char expanded[4096] = "";
     char *exp_ptr = expanded;
-    
-    while (*ps1) {
-        if (*ps1 == '\\') {
+
+    while (*ps1)
+    {
+        if (*ps1 == '\\')
+        {
             ps1++;
-            switch (*ps1) {
-                case 'u':
-                    exp_ptr += sprintf(exp_ptr, "%s", getenv("USER"));
-                    break;
-                case 'h':
-                    {
-                        char hostname[256];
-                        gethostname(hostname, sizeof(hostname));
-                        exp_ptr += sprintf(exp_ptr, "%s", hostname);
-                    }
-                    break;
-                case 'w':
-                    exp_ptr += sprintf(exp_ptr, "%s", cwd);
-                    break;
-                case 'W':
-                    {
-                        char *last_slash = strrchr(cwd, '/');
-                        exp_ptr += sprintf(exp_ptr, "%s", last_slash ? last_slash + 1 : cwd);
-                    }
-                    break;
-                case '$':
-                    exp_ptr += sprintf(exp_ptr, " %s ", getuid() == 0 ? "#" : "$");
-                    break;
-                case '[':
-                case ']':
-                    // Ignore these characters as they're used for bash prompt escaping
-                    break;
-                case 'e':
-                    *exp_ptr++ = '\033';  // ESC character
-                    break;
-                default:
-                    *exp_ptr++ = '\\';
-                    *exp_ptr++ = *ps1;
+            switch (*ps1)
+            {
+            case 'u':
+                exp_ptr += sprintf(exp_ptr, "%s", getenv("USER"));
+                break;
+            case 'h':
+            {
+                char hostname[256];
+                gethostname(hostname, sizeof(hostname));
+                exp_ptr += sprintf(exp_ptr, "%s", hostname);
             }
-        } else if (*ps1 == '\033') {
+            break;
+            case 'w':
+                exp_ptr += sprintf(exp_ptr, "%s", cwd);
+                break;
+            case 'W':
+            {
+                char *last_slash = strrchr(cwd, '/');
+                exp_ptr += sprintf(exp_ptr, "%s", last_slash ? last_slash + 1 : cwd);
+            }
+            break;
+            case '$':
+                exp_ptr += sprintf(exp_ptr, " %s ", getuid() == 0 ? "#" : "$");
+                break;
+            case '[':
+            case ']':
+                // Ignore these characters as they're used for bash prompt escaping
+                break;
+            case 'e':
+                *exp_ptr++ = '\033'; // ESC character
+                break;
+            default:
+                *exp_ptr++ = '\\';
+                *exp_ptr++ = *ps1;
+            }
+        }
+        else if (*ps1 == '\033')
+        {
             // If we encounter an ESC character directly, copy it
             *exp_ptr++ = *ps1;
-        } else {
+        }
+        else
+        {
             *exp_ptr++ = *ps1;
         }
         ps1++;
     }
     *exp_ptr = '\0';
-    
+
     printf("%s$ ", expanded);
     fflush(stdout);
 }
 
-void print_prompt(const char *PATH) {
+void print_prompt(const char *PATH)
+{
     char *ps1 = getenv("PS1");
-    if (ps1 == NULL) {
+    if (ps1 == NULL)
+    {
         // New default PS1
         ps1 = "\\[\\e[1;36m\\]\\u\\[\\e[0m\\]@\\[\\e[1;34m\\]PSH\\[\\e[0m\\] → \\[\\e[1;35m\\]\\W\\[\\e[0m\\]";
     }
@@ -668,29 +684,34 @@ void print_prompt(const char *PATH) {
     setenv("PS1", ps1, 1);
 }
 
-void load_history() {
+void load_history()
+{
 
-    free_history(); //free existing history
-    
+    free_history(); // free existing history
+
     // char *history[MAX_HISTORY];
     // int history_count = 0;
     // int current_history = -1;
 
     FILE *fp = fopen(path_memory, "r");
-    if (fp == NULL) {
-        perror("Error opening history file");
+    if (fp == NULL)
+    {
+        perror("Error opening history file :");
         return;
     }
 
     char line[MAX_LINE_LENGTH];
-    while (fgets(line, sizeof(line), fp) && history_count < PATH_MAX) {
+    while (fgets(line, sizeof(line), fp) && history_count < PATH_MAX)
+    {
         size_t len = strlen(line);
-        if (len > 0 && line[len-1] == '\n') {
-            line[len-1] = '\0';
+        if (len > 0 && line[len - 1] == '\n')
+        {
+            line[len - 1] = '\0';
         }
         history[history_count] = strdup(line);
 
-        if(history[history_count] == NULL) {
+        if (history[history_count] == NULL)
+        {
             perror("mem alloc failed");
             free_history();
             fclose(fp);
@@ -702,23 +723,26 @@ void load_history() {
     fclose(fp);
 }
 
-void free_history() {
-    for (int i = 0; i < history_count; i++) {
+void free_history()
+{
+    for (int i = 0; i < history_count; i++)
+    {
         free(history[i]);
     }
     history_count = 0;
     // free_double_pointer(history);
 }
 
-int kbhit(void) {
+int kbhit(void)
+{
     struct termios oldt, newt;
     int ch;
     int oldf;
 
     tcgetattr(STDIN_FILENO, &oldt);
     newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO); //disables canonical mode & echo 
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt); //sets new terminal settings
+    newt.c_lflag &= ~(ICANON | ECHO);        // disables canonical mode & echo
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt); // sets new terminal settings
     oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
     fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
 
@@ -727,7 +751,8 @@ int kbhit(void) {
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
     fcntl(STDIN_FILENO, F_SETFL, oldf);
 
-    if (ch != EOF) {
+    if (ch != EOF)
+    {
         ungetc(ch, stdin);
         return 1;
     }
@@ -735,33 +760,38 @@ int kbhit(void) {
     return 0;
 }
 // Function to enable raw mode
-void enableRawMode() {
+void enableRawMode()
+{
     struct termios raw;
     tcgetattr(STDIN_FILENO, &raw);
-    raw.c_lflag &= ~(ECHO | ICANON);                //change from canonical to raw and turning off echo
+    raw.c_lflag &= ~(ECHO | ICANON); // change from canonical to raw and turning off echo
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
 // Function to disable raw mode
-void disableRawMode() {
+void disableRawMode()
+{
     struct termios raw;
     tcgetattr(STDIN_FILENO, &raw);
-    raw.c_lflag |= (ECHO | ICANON);                 //change from raw to canonical and turning on echo
+    raw.c_lflag |= (ECHO | ICANON); // change from raw to canonical and turning on echo
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
-char *trim_whitespace(char *str) {
+char *trim_whitespace(char *str)
+{
     char *end;
 
     // Trim leading space
-    while (isspace((unsigned char)*str)) str++;
+    while (isspace((unsigned char)*str))
+        str++;
 
-    if (*str == 0)  // All spaces
+    if (*str == 0) // All spaces
         return str;
 
     // Trim trailing space
     end = str + strlen(str) - 1;
-    while (end > str && isspace((unsigned char)*end)) end--;
+    while (end > str && isspace((unsigned char)*end))
+        end--;
 
     // Write new null terminator character
     end[1] = '\0';
@@ -769,34 +799,38 @@ char *trim_whitespace(char *str) {
     return str;
 }
 
-void generate_session_id() {
+void generate_session_id()
+{
     snprintf(session_id, sizeof(session_id), "%ld", (long)time(NULL));
     // printf("%s",session_id);
     setenv("SESSIONID", session_id, 1);
 }
 
-void initialize_paths(const char *cwd) {
+void initialize_paths(const char *cwd)
+{
     snprintf(path_memory, sizeof(path_memory), "%s/.files/MEMORY_HISTORY_FILE", cwd);
 }
 
-void get_session_path(char *path_session, size_t size, const char *cwd) {
+void get_session_path(char *path_session, size_t size, const char *cwd)
+{
     snprintf(path_session, size, "%s/.files/SESSION_HISTORY_FILE_%s", cwd, session_id);
 }
 
-void initialize_shell(const char *cwd) {
+void initialize_shell(const char *cwd)
+{
     generate_session_id();
     initialize_paths(cwd);
 }
 
 unsigned int hash(const char *str, int size)
 {
-  unsigned int hash = 0;
-  int i = 0;
-  while (str[i])
-  {
-    hash = (hash << 5) + str[i++];
-  }
-  return hash % size;
+    unsigned int hash = 0;
+    int i = 0;
+    while (str[i])
+    {
+        hash = (hash << 5) + str[i++];
+    }
+    return hash % size;
 }
 
 HashMap *create_map(int size)
@@ -821,7 +855,7 @@ HashMap *create_map(int size)
     return map;
 }
 
-void delete_all_aliases(HashMap *map) 
+void delete_all_aliases(HashMap *map)
 {
     for (int i = 0; i < map->size; i++)
     {
@@ -840,18 +874,18 @@ void delete_all_aliases(HashMap *map)
 
 void insert_alias(HashMap *map, const char *name, const char *command)
 {
-  // printf("Inside insert function\n"); //debugging
-  unsigned int bucket_index = hash(name, map->size);
-  Alias *new_alias = (Alias *)malloc(sizeof(Alias));
-  if (!new_alias)
-  {
-    perror("Failed to allocate memory for new alias");
-    return;
-  }
-  new_alias->name = strdup(name);
-  new_alias->command = strdup(command);
-  new_alias->next = map->buckets[bucket_index];
-  map->buckets[bucket_index] = new_alias;
+    // printf("Inside insert function\n"); //debugging
+    unsigned int bucket_index = hash(name, map->size);
+    Alias *new_alias = (Alias *)malloc(sizeof(Alias));
+    if (!new_alias)
+    {
+        perror("Failed to allocate memory for new alias");
+        return;
+    }
+    new_alias->name = strdup(name);
+    new_alias->command = strdup(command);
+    new_alias->next = map->buckets[bucket_index];
+    map->buckets[bucket_index] = new_alias;
 }
 
 const char *get_alias_command(HashMap *map, const char *name)
@@ -880,7 +914,7 @@ void load_aliases(HashMap *map, const char *filepath)
             perror("Failed to create ALIAS file\n");
             free(map->buckets);
             free(map);
-            //return -1;
+            // return -1;
         }
         fclose(fp);
         fp = fopen(filepath, "r");
@@ -972,8 +1006,9 @@ void delete_alias(HashMap *map, const char *name)
 
     while (entry != NULL)
     {
-        if (strcmp(entry->name, name) == 0) {
-            if (prev == NULL) 
+        if (strcmp(entry->name, name) == 0)
+        {
+            if (prev == NULL)
             {
                 map->buckets[index] = entry->next;
             }
@@ -991,25 +1026,30 @@ void delete_alias(HashMap *map, const char *name)
     }
 }
 
-char **split_strings(const char *string) {
+char **split_strings(const char *string)
+{
     char *str = strdup(string);
-    if (!str) {
+    if (!str)
+    {
         fprintf(stderr, "psh: strdup allocation error\n");
         exit(EXIT_FAILURE);
     }
 
     size_t bufsize = 64, position = 0;
     char **split_arr = malloc(bufsize * sizeof(char *));
-    if (!split_arr) {
+    if (!split_arr)
+    {
         fprintf(stderr, "psh: allocation error\n");
         free(str);
         exit(EXIT_FAILURE);
     }
 
     char *token = strtok(str, " ");
-    while (token != NULL) {
+    while (token != NULL)
+    {
         split_arr[position] = strdup(token);
-        if (!split_arr[position]) {
+        if (!split_arr[position])
+        {
             fprintf(stderr, "psh: strdup allocation error\n");
             free(str);
             free(token);
@@ -1017,10 +1057,12 @@ char **split_strings(const char *string) {
             exit(EXIT_FAILURE);
         }
         position++;
-        if (position >= bufsize) {
+        if (position >= bufsize)
+        {
             bufsize += 64;
             split_arr = realloc(split_arr, bufsize * sizeof(char *));
-            if (!split_arr) {
+            if (!split_arr)
+            {
                 fprintf(stderr, "psh: allocation error\n");
                 free(str);
                 free(token);
@@ -1036,18 +1078,22 @@ char **split_strings(const char *string) {
     return split_arr;
 }
 
-char **replace_alias(HashMap *map, char **token_arr) {
+char **replace_alias(HashMap *map, char **token_arr)
+{
     const char *command = get_alias_command(map, token_arr[0]);
-    if (command) {
+    if (command)
+    {
         size_t bufsize = 64, position = 0;
         char **new_token_arr = malloc(bufsize * sizeof(char *));
-        if (!new_token_arr) {
+        if (!new_token_arr)
+        {
             fprintf(stderr, "psh: allocation error\n");
             exit(EXIT_FAILURE);
         }
 
         char **temp_arr = split_strings(command);
-        while (temp_arr[position] != NULL) {
+        while (temp_arr[position] != NULL)
+        {
             new_token_arr[position] = strdup(temp_arr[position]);
             if (!new_token_arr[position])
             {
@@ -1057,11 +1103,11 @@ char **replace_alias(HashMap *map, char **token_arr) {
                 exit(EXIT_FAILURE);
             }
             position++;
-            if (position >= bufsize) 
+            if (position >= bufsize)
             {
                 bufsize += 64;
                 new_token_arr = realloc(new_token_arr, bufsize * sizeof(char *));
-                if (!new_token_arr) 
+                if (!new_token_arr)
                 {
                     fprintf(stderr, "psh: allocation error\n");
                     free_double_pointer(new_token_arr);
@@ -1072,24 +1118,28 @@ char **replace_alias(HashMap *map, char **token_arr) {
         }
 
         int i = 1;
-        while (token_arr[i] != NULL) {
+        while (token_arr[i] != NULL)
+        {
             new_token_arr[position] = strdup(token_arr[i]);
-            if (!new_token_arr[position]) {
+            if (!new_token_arr[position])
+            {
                 fprintf(stderr, "psh: strdup allocation error\n");
                 free_double_pointer(new_token_arr);
                 free_double_pointer(temp_arr);
-                //exit(EXIT_FAILURE);
+                // exit(EXIT_FAILURE);
             }
             position++;
             i++;
-            if (position >= bufsize) {
+            if (position >= bufsize)
+            {
                 bufsize += 64;
                 new_token_arr = realloc(new_token_arr, bufsize * sizeof(char *));
-                if (!new_token_arr) {
+                if (!new_token_arr)
+                {
                     fprintf(stderr, "psh: allocation error\n");
                     free_double_pointer(new_token_arr);
                     free_double_pointer(temp_arr);
-                    //exit(EXIT_FAILURE);
+                    // exit(EXIT_FAILURE);
                 }
             }
         }
@@ -1099,14 +1149,18 @@ char **replace_alias(HashMap *map, char **token_arr) {
         free_double_pointer(temp_arr);
 
         return new_token_arr;
-    } else {
+    }
+    else
+    {
         return token_arr;
     }
 }
 
-char *remove_quotes(char *str) {
+char *remove_quotes(char *str)
+{
     size_t len = strlen(str);
-    if ((str[0] == '"' && str[len - 1] == '"') || (str[0] == '\'' && str[len - 1] == '\'')) {
+    if ((str[0] == '"' && str[len - 1] == '"') || (str[0] == '\'' && str[len - 1] == '\''))
+    {
         str[len - 1] = '\0';
         return str + 1;
     }
@@ -1114,29 +1168,37 @@ char *remove_quotes(char *str) {
 }
 
 // Function to expand environment variables within a string
-char *expand_variables(char *str) {
+char *expand_variables(char *str)
+{
     static char buffer[1024];
     char *ptr = str;
     char *buf_ptr = buffer;
 
-    while (*ptr) {
-        if (*ptr == '$') {
+    while (*ptr)
+    {
+        if (*ptr == '$')
+        {
             ptr++;
             char var_name[256];
             char *var_ptr = var_name;
 
-            while (*ptr && (isalnum(*ptr) || *ptr == '_')) {
+            while (*ptr && (isalnum(*ptr) || *ptr == '_'))
+            {
                 *var_ptr++ = *ptr++;
             }
             *var_ptr = '\0';
 
             char *var_value = getenv(var_name);
-            if (var_value) {
-                while (*var_value) {
+            if (var_value)
+            {
+                while (*var_value)
+                {
                     *buf_ptr++ = *var_value++;
                 }
             }
-        } else {
+        }
+        else
+        {
             *buf_ptr++ = *ptr++;
         }
     }
@@ -1144,10 +1206,13 @@ char *expand_variables(char *str) {
     return buffer;
 }
 
-void handle_env_variable(char *token_arr[]) {
-    if (strchr(token_arr[0], '=')) {
+void handle_env_variable(char *token_arr[])
+{
+    if (strchr(token_arr[0], '='))
+    {
         char *input = strdup(token_arr[0]);
-        if (input == NULL) {
+        if (input == NULL)
+        {
             perror("strdup");
             return;
         }
@@ -1155,14 +1220,18 @@ void handle_env_variable(char *token_arr[]) {
         char *var_name = strtok(input, "=");
         char *var_value = strtok(NULL, "=");
 
-        if (var_name && var_value) {
+        if (var_name && var_value)
+        {
             var_value = remove_quotes(var_value);
             var_value = expand_variables(var_value);
 
-            if (setenv(var_name, var_value, 1) != 0) {
+            if (setenv(var_name, var_value, 1) != 0)
+            {
                 perror("setenv");
             }
-        } else {
+        }
+        else
+        {
             fprintf(stderr, "Error: Invalid environment variable assignment\n");
         }
 
@@ -1170,11 +1239,12 @@ void handle_env_variable(char *token_arr[]) {
     }
 }
 
-void get_alias_path(char *path_session, size_t size, const char *cwd) {
+void get_alias_path(char *path_session, size_t size, const char *cwd)
+{
     snprintf(path_session, size, "%s/.files/ALIAS", cwd);
 }
 
-void sigint_handler(int sig)
+void sigint_handler()
 {
     const char *message = "SIGINT Detected\n";
     write(STDOUT_FILENO, message, strlen(message));
@@ -1182,47 +1252,58 @@ void sigint_handler(int sig)
     setenv("?", "130", 1);
 }
 
-char **get_commands_from_usr_bin(size_t *count) {
+char **get_commands_from_usr_bin(size_t *count)
+{
     DIR *dir;
     struct dirent *entry;
     size_t num_files = 0;
     size_t capacity = 10;
     char **files = malloc(capacity * sizeof(char *));
-    if (files == NULL) {
+    if (files == NULL)
+    {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
 
     char *path_env = getenv("PATH");
-    if (path_env == NULL) {
+    if (path_env == NULL)
+    {
         perror("getenv");
         free(files);
         exit(EXIT_FAILURE);
     }
 
     char *path = strdup(path_env);
-    if (path == NULL) {
+    if (path == NULL)
+    {
         perror("strdup");
         free(files);
         exit(EXIT_FAILURE);
     }
 
     char *dir_path = strtok(path, ":");
-    while (dir_path != NULL) {
+    while (dir_path != NULL)
+    {
         dir = opendir(dir_path);
-        if (dir == NULL) {
+        if (dir == NULL)
+        {
             dir_path = strtok(NULL, ":");
             continue;
         }
 
-        while ((entry = readdir(dir)) != NULL) {
-            if (entry->d_type == DT_REG || entry->d_type == DT_LNK) { // Regular files or symlinks
-                if (num_files >= capacity) {
+        while ((entry = readdir(dir)) != NULL)
+        {
+            if (entry->d_type == DT_REG || entry->d_type == DT_LNK)
+            { // Regular files or symlinks
+                if (num_files >= capacity)
+                {
                     capacity *= 2;
                     char **temp = realloc(files, capacity * sizeof(char *));
-                    if (temp == NULL) {
+                    if (temp == NULL)
+                    {
                         perror("realloc");
-                        for (size_t i = 0; i < num_files; i++) {
+                        for (size_t i = 0; i < num_files; i++)
+                        {
                             free(files[i]);
                         }
                         free(files);
@@ -1233,9 +1314,11 @@ char **get_commands_from_usr_bin(size_t *count) {
                     files = temp;
                 }
                 files[num_files] = strdup(entry->d_name);
-                if (files[num_files] == NULL) {
+                if (files[num_files] == NULL)
+                {
                     perror("strdup");
-                    for (size_t i = 0; i < num_files; i++) {
+                    for (size_t i = 0; i < num_files; i++)
+                    {
                         free(files[i]);
                     }
                     free(files);
@@ -1255,9 +1338,11 @@ char **get_commands_from_usr_bin(size_t *count) {
     // Resize the files array to accommodate the built-in commands
     capacity = num_files + size_builtin_str;
     char **temp = realloc(files, capacity * sizeof(char *));
-    if (temp == NULL) {
+    if (temp == NULL)
+    {
         perror("realloc");
-        for (size_t i = 0; i < num_files; i++) {
+        for (size_t i = 0; i < num_files; i++)
+        {
             free(files[i]);
         }
         free(files);
@@ -1266,11 +1351,14 @@ char **get_commands_from_usr_bin(size_t *count) {
     files = temp;
 
     // Copy built-in commands to the files array
-    for (size_t i = 0; i < size_builtin_str; i++) {
+    for (int i = 0; i < size_builtin_str; i++)
+    {
         files[num_files] = strdup(builtin_str[i]);
-        if (files[num_files] == NULL) {
+        if (files[num_files] == NULL)
+        {
             perror("strdup");
-            for (size_t j = 0; j < num_files; j++) {
+            for (size_t j = 0; j < num_files; j++)
+            {
                 free(files[j]);
             }
             free(files);
@@ -1283,28 +1371,40 @@ char **get_commands_from_usr_bin(size_t *count) {
     return files;
 }
 
-int min(int x, int y, int z) {
-    if (x < y && x < z) return x;
-    if (y < z) return y;
+int min(int x, int y, int z)
+{
+    if (x < y && x < z)
+        return x;
+    if (y < z)
+        return y;
     return z;
 }
 
-int levenshtein_distance(const char *s1, const char *s2) {
+int levenshtein_distance(const char *s1, const char *s2)
+{
     int len1 = strlen(s1);
     int len2 = strlen(s2);
     int *matrix = malloc((len1 + 1) * (len2 + 1) * sizeof(int));
-    if (matrix == NULL) {
+    if (matrix == NULL)
+    {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
 
-    for (int i = 0; i <= len1; i++) {
-        for (int j = 0; j <= len2; j++) {
-            if (i == 0) {
+    for (int i = 0; i <= len1; i++)
+    {
+        for (int j = 0; j <= len2; j++)
+        {
+            if (i == 0)
+            {
                 matrix[i * (len2 + 1) + j] = j;
-            } else if (j == 0) {
+            }
+            else if (j == 0)
+            {
                 matrix[i * (len2 + 1) + j] = i;
-            } else {
+            }
+            else
+            {
                 int cost = (s1[i - 1] == s2[j - 1]) ? 0 : 1;
                 matrix[i * (len2 + 1) + j] = min(matrix[(i - 1) * (len2 + 1) + j] + 1,
                                                  matrix[i * (len2 + 1) + (j - 1)] + 1,
@@ -1317,15 +1417,18 @@ int levenshtein_distance(const char *s1, const char *s2) {
     return result;
 }
 
-void autocomplete(const char *input, char **commands, size_t num_commands, char *buffer, size_t *pos, size_t *cursor) {
-    if (num_commands == 0) {
+void autocomplete(const char *input, char **commands, size_t num_commands, char *buffer, size_t *pos, size_t *cursor)
+{
+    if (num_commands == 0)
+    {
         printf("No commands to autocomplete.\n");
         return;
     }
 
     int *distances = malloc(num_commands * sizeof(int));
     int *prefix_matches = malloc(num_commands * sizeof(int));
-    if (!distances || !prefix_matches) {
+    if (!distances || !prefix_matches)
+    {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
@@ -1333,19 +1436,23 @@ void autocomplete(const char *input, char **commands, size_t num_commands, char 
     size_t match_count = 0;
     size_t last_match_index = 0;
 
-    for (size_t i = 0; i < num_commands; i++) {
-        if (strncmp(input, commands[i], strlen(input)) == 0) {
+    for (size_t i = 0; i < num_commands; i++)
+    {
+        if (strncmp(input, commands[i], strlen(input)) == 0)
+        {
             prefix_matches[i] = 1; // Exact prefix match
             match_count++;
             last_match_index = i;
-        } 
-        else {
+        }
+        else
+        {
             prefix_matches[i] = 0; // No exact prefix match
         }
         distances[i] = levenshtein_distance(input, commands[i]);
     }
     // If there's only one match, replace the buffer
-    if (match_count == 1) {
+    if (match_count == 1)
+    {
         strncpy(buffer, commands[last_match_index], MAX_LINE_LENGTH - 1);
         buffer[MAX_LINE_LENGTH - 1] = '\0';
         *pos = strlen(buffer);
@@ -1357,12 +1464,14 @@ void autocomplete(const char *input, char **commands, size_t num_commands, char 
         return;
     }
 
-
     // Sort commands by prefix match first, then by distance
-    for (size_t i = 0; i < num_commands && i < SIZE_MAX; i++) {
-        for (size_t j = i + 1; j < num_commands && j > i; j++) {
-            if (prefix_matches[j] > prefix_matches[i] || 
-               (prefix_matches[j] == prefix_matches[i] && distances[j] < distances[i])) {
+    for (size_t i = 0; i < num_commands && i < SIZE_MAX; i++)
+    {
+        for (size_t j = i + 1; j < num_commands && j > i; j++)
+        {
+            if (prefix_matches[j] > prefix_matches[i] ||
+                (prefix_matches[j] == prefix_matches[i] && distances[j] < distances[i]))
+            {
                 // Swap distances
                 int temp_dist = distances[i];
                 distances[i] = distances[j];
@@ -1383,9 +1492,9 @@ void autocomplete(const char *input, char **commands, size_t num_commands, char 
 
     // printf("Autocomplete suggestions for '%s':\n", input);
     printf("\n");
-    for (size_t i = 0; i < num_commands && i < 3; i++) 
-    {    
-        printf("%s%s", commands[i],"   ");
+    for (size_t i = 0; i < num_commands && i < 3; i++)
+    {
+        printf("%s%s", commands[i], "   ");
     }
     printf("\n");
 
@@ -1393,39 +1502,44 @@ void autocomplete(const char *input, char **commands, size_t num_commands, char 
     free(prefix_matches);
 }
 
-char **parse_pathtokens(char *path_token) {
+char **parse_pathtokens(char *path_token)
+{
     size_t bufsize = 64, position = 0;
     char **path_token_arr = malloc(bufsize * sizeof(char *));
-    if (!path_token_arr) {
+    if (!path_token_arr)
+    {
         fprintf(stderr, "psh: allocation error\n");
         exit(EXIT_FAILURE);
     }
 
     char *token = strtok(path_token, "/");
-    while (token != NULL) {
-        if (position >= bufsize) {
+    while (token != NULL)
+    {
+        if (position >= bufsize)
+        {
             bufsize += 64;
             path_token_arr = realloc(path_token_arr, bufsize * sizeof(char *));
-            if (!path_token_arr) {
+            if (!path_token_arr)
+            {
                 fprintf(stderr, "psh: allocation error\n");
                 exit(EXIT_FAILURE);
             }
         }
-        
+
         path_token_arr[position] = malloc((strlen(token) + 1) * sizeof(char));
-        if (!path_token_arr[position]) {
+        if (!path_token_arr[position])
+        {
             fprintf(stderr, "psh: allocation error\n");
             exit(EXIT_FAILURE);
         }
         strcpy(path_token_arr[position], token);
         position++;
-        
+
         token = strtok(NULL, "/");
     }
-    
-    path_token_arr[position] = NULL; 
+
+    path_token_arr[position] = NULL;
     free(token);
-    
+
     return path_token_arr;
 }
-
