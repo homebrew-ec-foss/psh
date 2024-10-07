@@ -1,8 +1,8 @@
 #include "psh.h"
 // variables
 
-//char cwd[PATH_MAX];
-char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for", "type","read", "alias", "unalias"};
+// char cwd[PATH_MAX];
+char *builtin_str[] = {"exit", "cd", "echo", "pwd", "fc", "export", "for", "type", "read", "alias", "unalias"};
 int (*builtin_func[])(char **) = {&PSH_EXIT, &PSH_CD, &PSH_ECHO, &PSH_PWD, &PSH_FC, &PSH_EXPORT, &PSH_FOR, &PSH_TYPE, &PSH_READ_SHELL, &PSH_ALIAS, &PSH_UNALIAS};
 
 int size_builtin_str = sizeof(builtin_str) / sizeof(builtin_str[0]);
@@ -93,7 +93,7 @@ int PSH_CD(char **token_arr)
         }
         else
         {
-            char **path_token_arr = parse_pathtokens(pathtoken); 
+            char **path_token_arr = parse_pathtokens(pathtoken);
             for (int i = 0; path_token_arr[i] != NULL; i++)
             {
                 if (strcmp(path_token_arr[i], "..") == 0)
@@ -136,7 +136,7 @@ int PSH_CD(char **token_arr)
             if (strcmp(PATH, "/") == 0)
                 snprintf(localdir, PATH_MAX, "/%s", pathtoken);
             else
-                snprintf(localdir, PATH_MAX, "%s/%s", PATH, pathtoken);
+                snprintf(localdir, PATH_MAX + 1, "%s/%s", PATH, pathtoken);
         }
         else
         {
@@ -230,7 +230,6 @@ int PSH_ECHO(char **token_arr)
         char *arg = malloc(PATH_MAX);
         // char *arg = strdup(token_arr[i]);
         strcpy(arg, token_arr[i]);
-        char *write_pos = arg;
 
         // Remove all quotes from the argument
         char *src = arg;
@@ -285,12 +284,12 @@ int PSH_ECHO(char **token_arr)
         {
             const char *var_name = arg + 1; // Skip the '$' sign
             const char *var_value = getenv(var_name);
-            
+
             if (var_value != NULL)
             {
                 // mallocing so that huge variables get enough space and seg fault gets avoided
                 size_t len = strlen(var_value);
-                char *buffer = (char *)malloc(len+1);
+                char *buffer = (char *)malloc(len + 1);
                 strcpy(buffer, var_value);
                 strcpy(arg, buffer);
                 // printf("%s", buffer);
@@ -805,7 +804,7 @@ int PSH_FC(char **token_arr)
         else if (offset < 0)
         {
             // Handling negative offset
-            if ((size_t)(-offset) > total_lines)
+            if ((-offset) > total_lines)
             {
                 printf("psh: history -d: %ld: history position out of range\n", offset);
                 fclose(fp1);
@@ -821,7 +820,7 @@ int PSH_FC(char **token_arr)
         }
 
         // Checking if line_to_remove is within range
-        if (line_to_remove > total_lines)
+        if ((int)line_to_remove > total_lines)
         {
             printf("psh: history -d: %zu: history position out of range\n",
                    line_to_remove);
@@ -1266,8 +1265,7 @@ int PSH_READ_SHELL(char **token_arr)
 
 int PSH_ALIAS(char **token_arr)
 {
-  // Setting ALIAS file location
-
+    // Setting ALIAS file location
 
     char ALIAS[PATH_MAX];
     // getcwd(cwd, sizeof(cwd)); // home/$USER/psh
@@ -1285,18 +1283,17 @@ int PSH_ALIAS(char **token_arr)
     load_aliases(map, ALIAS);
     if (token_arr[1] == NULL || strcmp(token_arr[1], "-p") == 0)
     {
-            for (int i = 0; i < map->size; i++) 
+        for (int i = 0; i < map->size; i++)
+        {
+            Alias *current = map->buckets[i];
+            while (current)
             {
-                Alias *current = map->buckets[i];
-                while (current) 
-                {
-                    printf("%s=%s\n", current->name, current->command);
-                    current = current->next;
-                }
+                printf("%s=%s\n", current->name, current->command);
+                current = current->next;
             }
-                       
-    } 
-    else if (strchr(token_arr[1], '=')) 
+        }
+    }
+    else if (strchr(token_arr[1], '='))
     {
         char *name = NULL;
         char *command = NULL;
@@ -1305,7 +1302,7 @@ int PSH_ALIAS(char **token_arr)
         name = token_arr[1];
         command = delimiter + 1;
         // printf("Command: %s\n", command);
-        if (command && strchr(command, '\n')) 
+        if (command && strchr(command, '\n'))
         {
             *strchr(command, '\n') = '\0';
         }
@@ -1314,8 +1311,8 @@ int PSH_ALIAS(char **token_arr)
             delete_alias(map, name);
         }
         insert_alias(map, name, command);
-    } 
-    else 
+    }
+    else
     {
         fprintf(stderr, "Unknown option: %s\n", token_arr[1]);
     }
@@ -1325,7 +1322,6 @@ int PSH_ALIAS(char **token_arr)
     // Free memory
     free_map(map);
     return 1;
-    
 }
 
 int PSH_UNALIAS(char **token_arr)

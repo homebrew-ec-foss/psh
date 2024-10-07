@@ -2,20 +2,20 @@
 #include "psh.h"
 
 // Unused Parameters
-int main(int argc, char **argv, char **envp)
+int main(int argc, char **argv)
 {
-    printf("\e[1;1H\e[2J"); // basically clears the screen
-    getcwd(cwd, sizeof(cwd)); // home/$USER/psh
+    printf("\033[1;1H\033[2J"); // basically clears the screen
+    getcwd(cwd, sizeof(cwd));   // home/$USER/psh
     strcpy(PATH, cwd);
-    
-    char COPY_PATH_PSHRC[PATH_MAX];
-    snprintf(COPY_PATH_PSHRC, sizeof(COPY_PATH_PSHRC), "%s/.files/.pshrc", cwd); // Form the path to pshrc
 
-    //load pshrc
+    char COPY_PATH_PSHRC[PATH_MAX];
+    snprintf(COPY_PATH_PSHRC, sizeof(COPY_PATH_PSHRC) + 14, "%s/.files/.pshrc", cwd); // Form the path to pshrc
+
+    // load pshrc
     PSH_SCRIPT(COPY_PATH_PSHRC);
 
     if (argc == 2)
-    {   
+    {
         return PSH_SCRIPT(argv[1]);
     }
     else
@@ -28,14 +28,14 @@ int main(int argc, char **argv, char **envp)
     return 0;
 }
 
-int PSH_LOOP(void)          
+int PSH_LOOP(void)
 {
     struct sigaction sa;
-    sa.sa_handler = sigint_handler;                          // Specify the signal handler function
+    sa.sa_handler = sigint_handler; // Specify the signal handler function
     sa.sa_flags = 0;
     sigemptyset(&sa.sa_mask);
-    sigaction(SIGINT, &sa, NULL);    // Set the action for SIGINT using the sigaction structure
-    
+    sigaction(SIGINT, &sa, NULL); // Set the action for SIGINT using the sigaction structure
+
     size_t n = 0;
     int run = 1;
     char *inputline = malloc(PATH_MAX);
@@ -51,13 +51,12 @@ int PSH_LOOP(void)
         }
         char path_session[PATH_MAX];
         get_session_path(path_session, sizeof(path_session), cwd);
-        save_history(inputline,path_session);
+        save_history(inputline, path_session);
         process_commands(inputline, &run);
     }
     free(inputline);
     return run;
 }
-
 
 int PSH_SCRIPT(const char *file)
 {
