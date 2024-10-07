@@ -388,6 +388,13 @@ int PSH_FC(char **token_arr)
     {
         n = 0;
     }
+
+    else if(strcmp(token_arr[1],"-n") == 0)
+    {printf("psh: fc: missing history argument\n"); return 1;}
+
+    else if(strcmp(token_arr[1],"-r") == 0)
+    {printf("psh: fc: missing history argument\n"); return 1;}
+
     else if ((strcmp(token_arr[1], "-l") == 0) &&
              (token_arr[2] == NULL ||
               (strcmp(token_arr[2], "-n") != 0 &&
@@ -405,6 +412,7 @@ int PSH_FC(char **token_arr)
     { // fc -ln, -nl, -l -n, -n -l
         n = 2;
     }
+    
     else if (((strcmp(token_arr[1], "-lr")) == 0) ||
              ((strcmp(token_arr[1], "-rl")) == 0) ||
              (((strcmp(token_arr[1], "-l")) == 0) &&
