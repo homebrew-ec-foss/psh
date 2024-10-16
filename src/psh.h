@@ -27,14 +27,11 @@
 #include <dirent.h>
 #include <stdint.h>
 
-
 #define MAX_VARS 100
 #define ARROW_UP 'A'
 #define ARROW_DOWN 'B'
 #define ARROW_LEFT 'D'
 #define ARROW_RIGHT 'C'
-
-
 
 #define MAX_VARS 100
 #define PATH_MAX 4096
@@ -48,7 +45,6 @@
 
 #define MAX_COMMAND_LENGTH 50
 
-
 // Defining Structs to hold variables and functions
 struct Variable
 {
@@ -61,11 +57,11 @@ struct Variable
 //     char func_def[1024];
 // };
 
-typedef struct Alias 
+typedef struct Alias
 {
     char *name;
     char *command;
-    struct Alias *next; 
+    struct Alias *next;
 } Alias;
 
 typedef struct HashMap
@@ -90,7 +86,7 @@ extern int last_command_up;
 extern char path_memory[];
 extern volatile int SIGNAL;
 extern struct Variable global_vars[MAX_VARS]; // Global array to store variables
-extern int num_vars; 
+extern int num_vars;
 extern char *history[PATH_MAX];
 extern int history_count;
 extern int current_history;
@@ -106,7 +102,7 @@ int PSH_LOOP(void);
 char **PSH_TOKENIZER(char *);
 int PSH_EXEC_EXTERNAL(char **);
 void handle_input(char **, size_t *, const char *);
-void save_history(const char *, const char*);
+void save_history(const char *, const char *);
 void process_commands(char *, int *);
 void execute_command(char **, int *);
 int kbhit();
@@ -134,7 +130,7 @@ char *find_closing_done(char *);
 void process_nested_loops(char *, int *);
 char *process_for_loop(char *, int *);
 void get_last_line(char **);
-unsigned int hash(const char *, int );
+unsigned int hash(const char *, int);
 HashMap *create_map(int);
 void delete_all_aliases(HashMap *);
 void insert_alias(HashMap *, const char *, const char *);
@@ -162,13 +158,13 @@ char *expand_variables(char *);
 void handle_env_variable(char *[]);
 void get_alias_path(char *, size_t, const char *);
 
-//signal
-void sigint_handler(int sig);
+// signal
+void sigint_handler();
 char **parse_pathtokens(char *);
 
-//autocomplete
+// autocomplete
 char **get_commands_from_usr_bin(size_t *);
-int min(int , int , int );
+int min(int, int, int);
 int levenshtein_distance(const char *, const char *);
-void autocomplete(const char *, char **, size_t , char *, size_t *, size_t *);
+void autocomplete(const char *, char **, size_t, char *, size_t *, size_t *);
 #endif
