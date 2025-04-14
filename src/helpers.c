@@ -683,8 +683,13 @@ void load_history()
     FILE *fp = fopen(path_memory, "r");
     if (fp == NULL)
     {
-        perror("Error opening history file :");
-        return;
+        fp = fopen(path_memory, "w");
+        // create MEMORY_HISTORY_FILE on first run 
+        /*printf("MEMORY_HISTORY_FILE successfully created :)\n");*/
+        if (fp == NULL) {
+          perror("Error opening history file :");
+          return;
+        }
     }
 
     char line[MAX_LINE_LENGTH];
