@@ -52,7 +52,7 @@ _Authors : [KK](https://github.com/Pro696969), [Adi](https://github.com/adityatr
 <!-- ![shell](assets/shell.png = 250x250) -->
 <img src="assets/shell.png" width=400 height=400>
 
-- A shell is an _cli_ interface that acts as an intermediary between a user and an operating system's kernel 
+- A shell is a _cli_ interface that acts as an intermediary between an user and an operating system's kernel 
 
 - Instead of using a graphical interface with buttons and menus, you type commands into the shell to control your system, like managing files or running programs. 
 
